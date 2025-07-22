@@ -143,17 +143,26 @@
   <div class="links">
     <a href="https://www.linkedin.com/in/tjdirks" target="_blank">LinkedIn</a>
   </div>
-<!-- Emergency Info Section -->
-<div style="margin-top: 2rem;">
-  <input type="password" id="emergencyPass" placeholder="Enter passcode for emergency info">
-  <button onclick="decryptData()">Unlock</button>
-  <pre id="emergencyInfo" style="white-space: pre-wrap; display: none; margin-top: 1rem;"></pre>
+<!-- Hidden Emergency Info (minimal version) -->
+<div id="emergencyContainer" style="margin-top: 2rem; text-align: center;">
+  <button id="revealButton" style="background: none; border: none; color: var(--accent); cursor: pointer;">🔒 Emergency</button>
+
+  <div id="unlockSection" style="display: none; margin-top: 1rem;">
+    <input type="password" id="emergencyPass" placeholder="Enter passcode" style="padding: 6px;">
+    <button onclick="decryptData()" style="padding: 6px;">Unlock</button>
+    <pre id="emergencyInfo" style="white-space: pre-wrap; display: none; margin-top: 1rem;"></pre>
+  </div>
 </div>
 
 <!-- CryptoJS Library -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 <script>
   const encrypted = "U2FsdGVkX1+VNybO7bD39AcHi0jBPqdzky2QoKtwQmc=";
+
+  document.getElementById('revealButton').addEventListener('click', () => {
+    document.getElementById('unlockSection').style.display = 'block';
+    document.getElementById('revealButton').style.display = 'none';
+  });
 
   function decryptData() {
     const pass = document.getElementById('emergencyPass').value;
@@ -168,6 +177,7 @@
     }
   }
 </script>
+
   <script>
     const toggle = document.getElementById('darkToggle');
     const body = document.body;
