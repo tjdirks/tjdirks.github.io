@@ -143,7 +143,31 @@
   <div class="links">
     <a href="https://www.linkedin.com/in/tjdirks" target="_blank">LinkedIn</a>
   </div>
+<!-- Emergency Info Section -->
+<div style="margin-top: 2rem;">
+  <input type="password" id="emergencyPass" placeholder="Enter passcode for emergency info">
+  <button onclick="decryptData()">Unlock</button>
+  <pre id="emergencyInfo" style="white-space: pre-wrap; display: none; margin-top: 1rem;"></pre>
+</div>
 
+<!-- CryptoJS Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+<script>
+  const encrypted = "U2FsdGVkX1+VNybO7bD39AcHi0jBPqdzky2QoKtwQmc=";
+
+  function decryptData() {
+    const pass = document.getElementById('emergencyPass').value;
+    try {
+      const decrypted = CryptoJS.AES.decrypt(encrypted, pass);
+      const text = decrypted.toString(CryptoJS.enc.Utf8);
+      if (!text) throw new Error('Wrong password');
+      document.getElementById('emergencyInfo').textContent = text;
+      document.getElementById('emergencyInfo').style.display = 'block';
+    } catch (e) {
+      alert("Invalid passcode.");
+    }
+  }
+</script>
   <script>
     const toggle = document.getElementById('darkToggle');
     const body = document.body;
