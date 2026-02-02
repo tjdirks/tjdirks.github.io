@@ -342,13 +342,12 @@
     <main class="card">
       <header class="header">
         <div class="hero">
-          <span class="kicker">Strategic Advisory</span>
           <h1>Thomas Dirks</h1>
           <p class="subtitle">M&amp;A · Corporate Finance · <strong>Value Creation</strong></p>
 
           <div class="links">
             <a href="https://www.linkedin.com/in/tjdirks" target="_blank">LinkedIn</a>
-            <a class="secondary" href="mailto:thomas@t-dirks.de">Kontakt</a>
+            <a class="secondary" id="emailLink" data-user="thomas" data-domain="t-dirks.de">Kontakt</a>
           </div>
         </div>
 
@@ -360,25 +359,6 @@
           </label>
         </div>
       </header>
-
-      <section class="grid">
-        <article class="tile">
-          <h3>Deal Strategy</h3>
-          <p>Strukturierte Transaktionen, klare Narrative und belastbare Value-Storys.</p>
-        </article>
-        <article class="tile">
-          <h3>Capital Markets</h3>
-          <p>Finanzierungslösungen, die Wachstum beschleunigen und Risiken reduzieren.</p>
-        </article>
-        <article class="tile">
-          <h3>Operational Value</h3>
-          <p>Synergien identifizieren, Performance steigern, Roadmaps umsetzen.</p>
-        </article>
-        <article class="tile">
-          <h3>Stakeholder Alignment</h3>
-          <p>Management, Investoren und Teams auf eine gemeinsame Vision ausrichten.</p>
-        </article>
-      </section>
 
       <!-- Hidden Emergency Info (minimal version) -->
       <section class="emergency" id="emergencyContainer">
@@ -396,7 +376,15 @@
 <!-- CryptoJS Library -->
 <script src="crypto-js.min.js"></script>
 <script>
-  const encrypted = "U2FsdGVkX1/fAydl0NCoESqR8kNwIRdwABhDBY70gbGs4q6sMlUwWqAl/ObmKbUS0qhq4VRCPcIjrT3ykbGf1S898sBu8RdsS3Y7vdSZPs3GaYr0Fcsj1Au2DWUhvQwAo7Uw0nMBHpg9LKvK4YvU2VrRHZqEijiCRhEh+CafU2Gys06j/eWEACeSuLUc/4bqyGb622GVRO66lKmEHZ7LLr0OJ9KSGc7Gn0OCS0F0HA3qM8dEIDcpnNnS+KlSVBbs+J0xyi13h4QH4nnutNtgEeGt2Azid0n3GxDIwHssKY+EOX4o+BzXC+NT3N5cTgOHJRLAHb9SHIB8Aq+I/rNoxYWemVAHe3KLSgJSlkoPeOM=";
+  const emailLink = document.getElementById('emailLink');
+  if (emailLink) {
+    const user = emailLink.dataset.user;
+    const domain = emailLink.dataset.domain;
+    const address = `${user}@${domain}`;
+    emailLink.href = `mailto:${address}`;
+  }
+
+  const encrypted = "U2FsdGVkX1/KY71QQxzMiekEDYlZ8CJ/2KpVF7+r8WeGCeWy6awReP1r5bwcPVeptk7WGW1zEL5lCxMkTqCso0DWJZdoBsF0SxoKRMo1cak=";
 
   document.getElementById('revealButton').addEventListener('click', () => {
     document.getElementById('unlockSection').style.display = 'block';
