@@ -6,68 +6,168 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     :root {
-      --bg-light: #e6ecf3;
+      --bg-light: #e9eff7;
       --text-light: #0d1b2a;
-      --bg-dark: #0d1b2a;
-      --text-dark: #e6ecf3;
-      --accent: #0077b6;
+      --bg-dark: #0b1624;
+      --text-dark: #f2f5f9;
+      --accent: #0ea5e9;
+      --accent-strong: #0284c7;
+      --surface-light: rgba(255, 255, 255, 0.7);
+      --surface-dark: rgba(13, 27, 42, 0.7);
+      --border-light: rgba(13, 27, 42, 0.12);
+      --border-dark: rgba(242, 245, 249, 0.18);
+      --shadow: 0 25px 60px rgba(15, 23, 42, 0.15);
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
       background-color: var(--bg-light);
-      background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
-      background-repeat: repeat;
+      background-image:
+        radial-gradient(circle at 15% 20%, rgba(14, 165, 233, 0.18), transparent 55%),
+        radial-gradient(circle at 85% 10%, rgba(2, 132, 199, 0.18), transparent 50%),
+        radial-gradient(circle at 50% 80%, rgba(148, 163, 184, 0.2), transparent 55%);
       color: var(--text-light);
-      text-align: center;
-      padding: 2rem;
       margin: 0;
+      min-height: 100vh;
       transition: background 0.3s, color 0.3s;
     }
 
     body.dark-mode {
       background-color: var(--bg-dark);
-      background-image: none;
+      background-image:
+        radial-gradient(circle at 15% 20%, rgba(14, 165, 233, 0.18), transparent 55%),
+        radial-gradient(circle at 85% 10%, rgba(59, 130, 246, 0.18), transparent 50%),
+        radial-gradient(circle at 50% 80%, rgba(51, 65, 85, 0.4), transparent 55%);
       color: var(--text-dark);
     }
 
-    h1 {
-      font-size: 2em;
-      margin-bottom: 0.3em;
+    .page {
+      padding: 2.5rem 1.5rem 3.5rem;
+      display: flex;
+      justify-content: center;
     }
 
-    p {
-      margin-bottom: 2rem;
+    .card {
+      width: min(960px, 100%);
+      background: var(--surface-light);
+      border: 1px solid var(--border-light);
+      border-radius: 28px;
+      padding: 2.5rem;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    body.dark-mode .card {
+      background: var(--surface-dark);
+      border-color: var(--border-dark);
+    }
+
+    .header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .hero {
+      text-align: left;
+    }
+
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 0.9rem;
+      border-radius: 999px;
+      background: rgba(14, 165, 233, 0.12);
+      color: var(--accent-strong);
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    body.dark-mode .kicker {
+      color: var(--accent);
+      background: rgba(14, 165, 233, 0.2);
+    }
+
+    h1 {
+      font-size: clamp(2.2rem, 3vw, 3.2rem);
+      margin: 1rem 0 0.5rem;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      margin: 0 0 1.5rem;
+      color: inherit;
+    }
+
+    .subtitle strong {
+      color: var(--accent-strong);
+    }
+
+    body.dark-mode .subtitle strong {
+      color: var(--accent);
+    }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
     }
 
     .links a {
-      display: block;
-      margin: 12px auto;
-      padding: 12px 24px;
-      width: 90%;
-      max-width: 280px;
-      background-color: var(--text-light);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.6rem;
+      background: var(--text-light);
       color: var(--bg-light);
       text-decoration: none;
-      border-radius: 8px;
-      transition: background 0.3s, transform 0.2s;
+      border-radius: 999px;
+      font-weight: 600;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.2);
     }
 
     body.dark-mode .links a {
-      background-color: var(--text-dark);
+      background: var(--text-dark);
       color: var(--bg-dark);
     }
 
     .links a:hover {
-      background-color: var(--accent);
+      background: var(--accent);
       color: white;
-      transform: scale(1.02);
+      transform: translateY(-2px);
+      box-shadow: 0 16px 35px rgba(14, 165, 233, 0.35);
+    }
+
+    .links a.secondary {
+      background: transparent;
+      color: inherit;
+      border: 1px solid var(--border-light);
+      box-shadow: none;
+    }
+
+    body.dark-mode .links a.secondary {
+      border-color: var(--border-dark);
+    }
+
+    .links a.secondary:hover {
+      border-color: transparent;
+      background: rgba(14, 165, 233, 0.12);
+      color: inherit;
+      transform: translateY(-2px);
     }
 
     .toggle-container {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 
     .toggle {
@@ -114,45 +214,184 @@
       transform: translateX(24px);
     }
 
+    .grid {
+      margin-top: 2.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .tile {
+      padding: 1.4rem;
+      border-radius: 20px;
+      border: 1px solid var(--border-light);
+      background: rgba(255, 255, 255, 0.5);
+      text-align: left;
+      transition: transform 0.2s ease, border 0.2s ease, background 0.2s ease;
+    }
+
+    body.dark-mode .tile {
+      border-color: var(--border-dark);
+      background: rgba(13, 27, 42, 0.4);
+    }
+
+    .tile:hover {
+      transform: translateY(-4px);
+      border-color: rgba(14, 165, 233, 0.4);
+      background: rgba(14, 165, 233, 0.08);
+    }
+
+    .tile h3 {
+      margin: 0 0 0.5rem;
+      font-size: 1.05rem;
+    }
+
+    .tile p {
+      margin: 0;
+      color: inherit;
+      opacity: 0.8;
+      font-size: 0.95rem;
+    }
+
+    .emergency {
+      margin-top: 2.5rem;
+      text-align: left;
+      border-top: 1px solid var(--border-light);
+      padding-top: 1.5rem;
+    }
+
+    body.dark-mode .emergency {
+      border-color: var(--border-dark);
+    }
+
+    .emergency button {
+      background: none;
+      border: none;
+      color: var(--accent-strong);
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    body.dark-mode .emergency button {
+      color: var(--accent);
+    }
+
+    .emergency .action-button {
+      background: var(--accent);
+      color: white;
+      border-radius: 999px;
+      padding: 0.6rem 1.4rem;
+      border: none;
+      box-shadow: 0 10px 20px rgba(14, 165, 233, 0.35);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .emergency .action-button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 28px rgba(14, 165, 233, 0.4);
+    }
+
+    .emergency input {
+      padding: 0.6rem 0.8rem;
+      border-radius: 10px;
+      border: 1px solid var(--border-light);
+      background: rgba(255, 255, 255, 0.7);
+      color: inherit;
+    }
+
+    body.dark-mode .emergency input {
+      border-color: var(--border-dark);
+      background: rgba(13, 27, 42, 0.6);
+    }
+
+    .emergency pre {
+      background: rgba(15, 23, 42, 0.08);
+      padding: 1rem;
+      border-radius: 12px;
+      margin-top: 1rem;
+      color: inherit;
+    }
+
+    body.dark-mode .emergency pre {
+      background: rgba(15, 23, 42, 0.5);
+    }
+
     @media (max-width: 600px) {
-      body {
-        padding: 1.5rem 1rem;
+      .card {
+        padding: 1.8rem;
       }
 
-      h1 {
-        font-size: 1.7em;
+      .header {
+        flex-direction: column;
+      }
+
+      .links {
+        width: 100%;
       }
 
       .links a {
-        font-size: 1rem;
+        flex: 1 1 auto;
+        justify-content: center;
       }
     }
   </style>
 </head>
 <body>
-  <div class="toggle-container">
-    <label class="toggle">
-      <input type="checkbox" id="darkToggle">
-      <span class="slider"></span>
-    </label>
-  </div>
+  <div class="page">
+    <main class="card">
+      <header class="header">
+        <div class="hero">
+          <span class="kicker">Strategic Advisory</span>
+          <h1>Thomas Dirks</h1>
+          <p class="subtitle">M&amp;A · Corporate Finance · <strong>Value Creation</strong></p>
 
-  <h1>Thomas Dirks</h1>
-  <p>M&A · Corporate Finance</p>
+          <div class="links">
+            <a href="https://www.linkedin.com/in/tjdirks" target="_blank">LinkedIn</a>
+            <a class="secondary" href="mailto:thomas@t-dirks.de">Kontakt</a>
+          </div>
+        </div>
 
-  <div class="links">
-    <a href="https://www.linkedin.com/in/tjdirks" target="_blank">LinkedIn</a>
-  </div>
-<!-- Hidden Emergency Info (minimal version) -->
-<div id="emergencyContainer" style="margin-top: 2rem; text-align: center;">
-  <button id="revealButton" style="background: none; border: none; color: var(--accent); cursor: pointer;">🔒 Emergency</button>
+        <div class="toggle-container">
+          <span>Dark Mode</span>
+          <label class="toggle">
+            <input type="checkbox" id="darkToggle">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </header>
 
-  <div id="unlockSection" style="display: none; margin-top: 1rem;">
-    <input type="password" id="emergencyPass" placeholder="Enter passcode" style="padding: 6px;">
-    <button onclick="decryptData()" style="padding: 6px;">Unlock</button>
-    <pre id="emergencyInfo" style="white-space: pre-wrap; display: none; margin-top: 1rem;"></pre>
+      <section class="grid">
+        <article class="tile">
+          <h3>Deal Strategy</h3>
+          <p>Strukturierte Transaktionen, klare Narrative und belastbare Value-Storys.</p>
+        </article>
+        <article class="tile">
+          <h3>Capital Markets</h3>
+          <p>Finanzierungslösungen, die Wachstum beschleunigen und Risiken reduzieren.</p>
+        </article>
+        <article class="tile">
+          <h3>Operational Value</h3>
+          <p>Synergien identifizieren, Performance steigern, Roadmaps umsetzen.</p>
+        </article>
+        <article class="tile">
+          <h3>Stakeholder Alignment</h3>
+          <p>Management, Investoren und Teams auf eine gemeinsame Vision ausrichten.</p>
+        </article>
+      </section>
+
+      <!-- Hidden Emergency Info (minimal version) -->
+      <section class="emergency" id="emergencyContainer">
+        <button id="revealButton">🔒 Emergency</button>
+
+        <div id="unlockSection" style="display: none; margin-top: 1rem;">
+          <input type="password" id="emergencyPass" placeholder="Enter passcode">
+          <button class="action-button" onclick="decryptData()">Unlock</button>
+          <pre id="emergencyInfo" style="white-space: pre-wrap; display: none;"></pre>
+        </div>
+      </section>
+    </main>
   </div>
-</div>
 
 <!-- CryptoJS Library -->
 <script src="crypto-js.min.js"></script>
