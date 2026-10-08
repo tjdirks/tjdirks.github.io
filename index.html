@@ -357,7 +357,6 @@
     </main>
   </div>
 
-  <script src="crypto-js.min.js"></script>
   <script>
     const $ = (id) => document.getElementById(id);
 
@@ -375,7 +374,7 @@
     });
 
     // Emergency info
-    const encrypted = "U2FsdGVkX1/KY71QQxzMiekEDYlZ8CJ/2KpVF7+r8WeGCeWy6awReP1r5bwcPVeptk7WGW1zEL5lCxMkTqCso0DWJZdoBsF0SxoKRMo1cak=";
+    const encrypted = "jjTTUFhoaDLbaiU/QZXhT1haWH1OjbV7WaiI2uobHdXs53GeDESW9thj9S3A7LWDhmdBag8eFdix";
     const revealButton = $('revealButton');
     const unlockSection = $('unlockSection');
     const passInput = $('emergencyPass');
@@ -390,11 +389,22 @@
       passInput.focus();
     });
 
-    $('unlockForm').addEventListener('submit', (e) => {
+    // Payload = base64(salt[16] | iv[12] | AES-GCM ciphertext); key = PBKDF2-SHA256(passcode)
+    async function decrypt(passcode) {
+      const data = Uint8Array.from(atob(encrypted), (ch) => ch.charCodeAt(0));
+      const material = await crypto.subtle.importKey('raw', new TextEncoder().encode(passcode), 'PBKDF2', false, ['deriveKey']);
+      const key = await crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt: data.slice(0, 16), iterations: 600000, hash: 'SHA-256' },
+        material, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+      const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: data.slice(16, 28) }, key, data.slice(28));
+      return new TextDecoder().decode(plain);
+    }
+
+    $('unlockForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       let text = '';
       try {
-        text = CryptoJS.AES.decrypt(encrypted, passInput.value).toString(CryptoJS.enc.Utf8);
+        text = await decrypt(passInput.value);
       } catch (err) {}
       if (!text) {
         errorMsg.hidden = false;
