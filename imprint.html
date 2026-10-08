@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Imprint · Thomas Dirks</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#05080f">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2305080f'/%3E%3Ctext x='32' y='44' font-family='sans-serif' font-size='30' font-weight='700' text-anchor='middle' fill='%2338bdf8'%3ETD%3C/text%3E%3C/svg%3E">
+
+  <script>
+    // Dark is the default; only an explicit "light" choice is remembered.
+    (function () {
+      var dark = true;
+      try { dark = localStorage.getItem('dark-mode') !== 'false'; } catch (e) {}
+      if (dark) document.documentElement.classList.add('dark');
+      // SVG filters inside backdrop-filter only work in Chromium; others get a plain blur.
+      var b = navigator.userAgentData && navigator.userAgentData.brands;
+      if (b && b.some(function (x) { return /Chromium/.test(x.brand); })) {
+        document.documentElement.classList.add('lg');
+      }
+    })();
+  </script>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <svg width="0" height="0" aria-hidden="true" style="position:absolute">
+    <filter id="lg" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.008 0.012" numOctaves="2" seed="7" result="n"/>
+      <feGaussianBlur in="n" stdDeviation="2" result="nb"/>
+      <feDisplacementMap in="SourceGraphic" in2="nb" scale="40" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </svg>
+
+  <div class="backdrop" aria-hidden="true">
+    <span class="orb"></span><span class="orb"></span><span class="orb"></span>
+  </div>
+
+  <div class="page">
+    <main class="card glass legal">
+      <a class="back" href="./">← Back</a>
+      <h1>Imprint</h1>
+
+      <h2>Angaben gemäß § 5 DDG</h2>
+      <p>Thomas Dirks<br>Lilli-Friedemann-Ring 24<br>30177 Hannover<br>Germany</p>
+
+      <h2>Contact</h2>
+      <p><a id="mail" href="#" data-user="thomas" data-domain="t-dirks.de">Email</a></p>
+    </main>
+  </div>
+
+  <script>
+    const mail = document.getElementById('mail');
+    const address = `${mail.dataset.user}@${mail.dataset.domain}`;
+    mail.href = `mailto:${address}`;
+    mail.textContent = address;
+  </script>
+</body>
+</html>
