@@ -27,7 +27,7 @@
     })();
   </script>
 
-  <link rel="stylesheet" href="style.css?v=2">
+  <link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
   <!-- Refraction filter used by the .glass backdrop (Chromium) -->
@@ -79,10 +79,19 @@
         </div>
       </section>
     </main>
-    <footer class="foot">
-      <a href="finanzierungsrechner.html">Tools</a>
-      <a href="imprint.html">Imprint</a>
-    </footer>
+    <footer class="foot"><a href="#imprint">Imprint</a></footer>
+
+    <dialog id="imprint" aria-labelledby="imprintTitle">
+      <div class="sheet">
+        <button type="button" class="close" id="imprintClose" aria-label="Close">×</button>
+        <h2 id="imprintTitle">Imprint</h2>
+        <h3>Angaben gemäß § 5 DDG</h3>
+        <p id="imprintAddr"></p>
+        <h3>Contact</h3>
+        <p><a id="imprintMail" href="#" data-user="thomas" data-domain="t-dirks.de"></a></p>
+        <a class="tools" href="finanzierungsrechner.html">Tools</a>
+      </div>
+    </dialog>
   </div>
 
   <script>
@@ -91,6 +100,28 @@
     // Contact link: assembled at runtime to keep the address out of the static HTML
     const emailLink = $('emailLink');
     emailLink.href = `mailto:${emailLink.dataset.user}@${emailLink.dataset.domain}`;
+
+    // Imprint overlay: the address is stored encoded and only written into the page when opened
+    const imprint = $('imprint');
+    const addr = "VGhvbWFzIERpcmtzCkxpbGxpLUZyaWVkZW1hbm4tUmluZyAyNAozMDE3NyBIYW5ub3ZlcgpHZXJtYW55";
+    const mail = $('imprintMail');
+    function syncImprint() {
+      if (location.hash !== '#imprint') return imprint.open && imprint.close();
+      if (imprint.open) return;
+      if (!$('imprintAddr').textContent) {
+        $('imprintAddr').textContent = new TextDecoder().decode(Uint8Array.from(atob(addr), (ch) => ch.charCodeAt(0)));
+        mail.textContent = `${mail.dataset.user}@${mail.dataset.domain}`;
+        mail.href = `mailto:${mail.textContent}`;
+      }
+      imprint.showModal();
+    }
+    imprint.addEventListener('close', () => {
+      if (location.hash === '#imprint') history.replaceState(null, '', location.pathname + location.search);
+    });
+    imprint.addEventListener('click', (e) => { if (e.target === imprint) imprint.close(); });
+    $('imprintClose').addEventListener('click', () => imprint.close());
+    window.addEventListener('hashchange', syncImprint);
+    syncImprint();
 
     // Dark mode (initial state is set by the inline script in <head>)
     const root = document.documentElement;
