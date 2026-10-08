@@ -2,43 +2,84 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Thomas Dirks</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thomas Dirks</title>
+  <meta name="description" content="Thomas Dirks – M&A and Corporate Finance.">
+  <meta name="theme-color" content="#e9eff7">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Thomas Dirks">
+  <meta property="og:description" content="M&A · Corporate Finance">
+  <meta property="og:url" content="https://t-dirks.de/">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230b1624'/%3E%3Ctext x='32' y='44' font-family='sans-serif' font-size='30' font-weight='700' text-anchor='middle' fill='%230ea5e9'%3ETD%3C/text%3E%3C/svg%3E">
+
+  <script>
+    // Apply theme before first paint: saved choice, else the OS preference.
+    (function () {
+      var dark;
+      try { dark = localStorage.getItem('dark-mode'); } catch (e) {}
+      if (dark === null || dark === undefined) {
+        dark = String(window.matchMedia('(prefers-color-scheme: dark)').matches);
+      }
+      if (dark === 'true') document.documentElement.classList.add('dark');
+    })();
+  </script>
+
   <style>
-    :root {
-      --bg-light: #e9eff7;
-      --text-light: #0d1b2a;
-      --bg-dark: #0b1624;
-      --text-dark: #f2f5f9;
-      --accent: #0ea5e9;
-      --accent-strong: #0284c7;
-      --surface-light: rgba(255, 255, 255, 0.7);
-      --surface-dark: rgba(13, 27, 42, 0.7);
-      --border-light: rgba(13, 27, 42, 0.12);
-      --border-dark: rgba(242, 245, 249, 0.18);
-      --shadow: 0 25px 60px rgba(15, 23, 42, 0.15);
+    @property --a {
+      syntax: "<angle>";
+      inherits: false;
+      initial-value: 0deg;
     }
+
+    :root {
+      --bg: #e9eff7;
+      --text: #0d1b2a;
+      --accent: #0ea5e9;
+      --accent-text: #0284c7;
+      --surface: rgba(255, 255, 255, 0.7);
+      --border: rgba(13, 27, 42, 0.12);
+      --field: rgba(255, 255, 255, 0.7);
+      --code: rgba(15, 23, 42, 0.08);
+      --glow-1: rgba(14, 165, 233, 0.18);
+      --glow-2: rgba(2, 132, 199, 0.18);
+      --glow-3: rgba(148, 163, 184, 0.2);
+      --shadow: 0 25px 60px rgba(15, 23, 42, 0.15);
+      color-scheme: light;
+    }
+
+    :root.dark {
+      --bg: #0b1624;
+      --text: #f2f5f9;
+      --accent-text: #0ea5e9;
+      --surface: rgba(13, 27, 42, 0.7);
+      --border: rgba(242, 245, 249, 0.18);
+      --field: rgba(13, 27, 42, 0.6);
+      --code: rgba(15, 23, 42, 0.5);
+      --glow-2: rgba(59, 130, 246, 0.18);
+      --glow-3: rgba(51, 65, 85, 0.4);
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
 
     body {
-      font-family: "Inter", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-      background-color: var(--bg-light);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
+      background-color: var(--bg);
       background-image:
-        radial-gradient(circle at 15% 20%, rgba(14, 165, 233, 0.18), transparent 55%),
-        radial-gradient(circle at 85% 10%, rgba(2, 132, 199, 0.18), transparent 50%),
-        radial-gradient(circle at 50% 80%, rgba(148, 163, 184, 0.2), transparent 55%);
-      color: var(--text-light);
+        radial-gradient(circle at 15% 20%, var(--glow-1), transparent 55%),
+        radial-gradient(circle at 85% 10%, var(--glow-2), transparent 50%),
+        radial-gradient(circle at 50% 80%, var(--glow-3), transparent 55%);
+      background-attachment: fixed;
+      color: var(--text);
       margin: 0;
       min-height: 100vh;
-      transition: background 0.3s, color 0.3s;
+      transition: background-color 0.3s, color 0.3s;
     }
 
-    body.dark-mode {
-      background-color: var(--bg-dark);
-      background-image:
-        radial-gradient(circle at 15% 20%, rgba(14, 165, 233, 0.18), transparent 55%),
-        radial-gradient(circle at 85% 10%, rgba(59, 130, 246, 0.18), transparent 50%),
-        radial-gradient(circle at 50% 80%, rgba(51, 65, 85, 0.4), transparent 55%);
-      color: var(--text-dark);
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
     }
 
     .page {
@@ -47,19 +88,46 @@
       justify-content: center;
     }
 
+    /* Card with a rotating conic-gradient border driven by the animated --a angle */
     .card {
+      position: relative;
       width: min(960px, 100%);
-      background: var(--surface-light);
-      border: 1px solid var(--border-light);
+      background: var(--surface);
       border-radius: 28px;
       padding: 2.5rem;
       box-shadow: var(--shadow);
+      -webkit-backdrop-filter: blur(16px);
       backdrop-filter: blur(16px);
+      animation: spin 6s linear infinite;
     }
 
-    body.dark-mode .card {
-      background: var(--surface-dark);
-      border-color: var(--border-dark);
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      padding: 2px;
+      border-radius: inherit;
+      background: conic-gradient(
+        from var(--a),
+        transparent 0deg,
+        var(--accent) 70deg,
+        #38bdf8 110deg,
+        transparent 180deg,
+        transparent 360deg
+      );
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+      pointer-events: none;
+    }
+
+    @keyframes spin {
+      to { --a: 360deg; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .card { animation: none; }
+      * { transition: none !important; }
     }
 
     .header {
@@ -70,47 +138,17 @@
       flex-wrap: wrap;
     }
 
-    .hero {
-      text-align: center;
-    }
-
-    .kicker {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.4rem 0.9rem;
-      border-radius: 999px;
-      background: rgba(14, 165, 233, 0.12);
-      color: var(--accent-strong);
-      font-weight: 600;
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-
-    body.dark-mode .kicker {
-      color: var(--accent);
-      background: rgba(14, 165, 233, 0.2);
-    }
+    .hero { text-align: center; }
 
     h1 {
       font-size: clamp(2.2rem, 3vw, 3.2rem);
-      margin: 1rem 0 0.5rem;
+      margin: 0 0 0.5rem;
       letter-spacing: -0.02em;
     }
 
     .subtitle {
       font-size: 1.1rem;
       margin: 0 0 1.5rem;
-      color: inherit;
-    }
-
-    .subtitle strong {
-      color: var(--accent-strong);
-    }
-
-    body.dark-mode .subtitle strong {
-      color: var(--accent);
     }
 
     .links {
@@ -123,10 +161,9 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
       padding: 0.75rem 1.6rem;
-      background: var(--text-light);
-      color: var(--bg-light);
+      background: var(--text);
+      color: var(--bg);
       text-decoration: none;
       border-radius: 999px;
       font-weight: 600;
@@ -134,14 +171,9 @@
       box-shadow: 0 10px 30px rgba(15, 23, 42, 0.2);
     }
 
-    body.dark-mode .links a {
-      background: var(--text-dark);
-      color: var(--bg-dark);
-    }
-
     .links a:hover {
       background: var(--accent);
-      color: white;
+      color: #fff;
       transform: translateY(-2px);
       box-shadow: 0 16px 35px rgba(14, 165, 233, 0.35);
     }
@@ -149,140 +181,89 @@
     .links a.secondary {
       background: transparent;
       color: inherit;
-      border: 1px solid var(--border-light);
+      border: 1px solid var(--border);
       box-shadow: none;
-    }
-
-    body.dark-mode .links a.secondary {
-      border-color: var(--border-dark);
     }
 
     .links a.secondary:hover {
       border-color: transparent;
       background: rgba(14, 165, 233, 0.12);
       color: inherit;
-      transform: translateY(-2px);
     }
 
     .toggle-container {
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      cursor: pointer;
     }
 
     .toggle {
       position: relative;
       width: 50px;
       height: 26px;
+      flex: none;
     }
 
     .toggle input {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      margin: 0;
       opacity: 0;
-      width: 0;
-      height: 0;
+      cursor: pointer;
     }
 
     .slider {
       position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
+      inset: 0;
       background-color: #ccc;
       border-radius: 26px;
-      transition: 0.4s;
+      transition: background-color 0.3s;
+      pointer-events: none;
     }
 
-    .slider:before {
-      position: absolute;
+    .slider::before {
       content: "";
+      position: absolute;
       height: 20px;
       width: 20px;
       left: 3px;
       bottom: 3px;
-      background-color: white;
+      background-color: #fff;
       border-radius: 50%;
-      transition: 0.4s;
+      transition: transform 0.3s;
     }
 
-    input:checked + .slider {
-      background-color: var(--accent);
-    }
-
-    input:checked + .slider:before {
-      transform: translateX(24px);
-    }
-
-    .grid {
-      margin-top: 2.5rem;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1.5rem;
-    }
-
-    .tile {
-      padding: 1.4rem;
-      border-radius: 20px;
-      border: 1px solid var(--border-light);
-      background: rgba(255, 255, 255, 0.5);
-      text-align: left;
-      transition: transform 0.2s ease, border 0.2s ease, background 0.2s ease;
-    }
-
-    body.dark-mode .tile {
-      border-color: var(--border-dark);
-      background: rgba(13, 27, 42, 0.4);
-    }
-
-    .tile:hover {
-      transform: translateY(-4px);
-      border-color: rgba(14, 165, 233, 0.4);
-      background: rgba(14, 165, 233, 0.08);
-    }
-
-    .tile h3 {
-      margin: 0 0 0.5rem;
-      font-size: 1.05rem;
-    }
-
-    .tile p {
-      margin: 0;
-      color: inherit;
-      opacity: 0.8;
-      font-size: 0.95rem;
+    .toggle input:checked + .slider { background-color: var(--accent); }
+    .toggle input:checked + .slider::before { transform: translateX(24px); }
+    .toggle input:focus-visible + .slider {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
     }
 
     .emergency {
       margin-top: 2.5rem;
-      text-align: left;
-      border-top: 1px solid var(--border-light);
+      border-top: 1px solid var(--border);
       padding-top: 1.5rem;
     }
 
-    body.dark-mode .emergency {
-      border-color: var(--border-dark);
-    }
-
     .emergency button {
+      font: inherit;
       background: none;
       border: none;
-      color: var(--accent-strong);
+      color: var(--accent-text);
       font-weight: 600;
       cursor: pointer;
       padding: 0;
     }
 
-    body.dark-mode .emergency button {
-      color: var(--accent);
-    }
-
     .emergency .action-button {
       background: var(--accent);
-      color: white;
+      color: #fff;
       border-radius: 999px;
       padding: 0.6rem 1.4rem;
-      border: none;
       box-shadow: 0 10px 20px rgba(14, 165, 233, 0.35);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
@@ -292,48 +273,46 @@
       box-shadow: 0 14px 28px rgba(14, 165, 233, 0.4);
     }
 
+    .unlock-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
     .emergency input {
+      font: inherit;
       padding: 0.6rem 0.8rem;
       border-radius: 10px;
-      border: 1px solid var(--border-light);
-      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid var(--border);
+      background: var(--field);
       color: inherit;
     }
 
-    body.dark-mode .emergency input {
-      border-color: var(--border-dark);
-      background: rgba(13, 27, 42, 0.6);
+    .emergency .error {
+      margin: 0.75rem 0 0;
+      color: #dc2626;
+      font-size: 0.9rem;
     }
+
+    :root.dark .emergency .error { color: #f87171; }
 
     .emergency pre {
-      background: rgba(15, 23, 42, 0.08);
+      background: var(--code);
       padding: 1rem;
       border-radius: 12px;
-      margin-top: 1rem;
-      color: inherit;
+      margin: 1rem 0 0.5rem;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
     }
 
-    body.dark-mode .emergency pre {
-      background: rgba(15, 23, 42, 0.5);
-    }
+    [hidden] { display: none !important; }
 
     @media (max-width: 600px) {
-      .card {
-        padding: 1.8rem;
-      }
-
-      .header {
-        flex-direction: column;
-      }
-
-      .links {
-        width: 100%;
-      }
-
-      .links a {
-        flex: 1 1 auto;
-        justify-content: center;
-      }
+      .card { padding: 1.8rem; }
+      .header { flex-direction: column; }
+      .links { width: 100%; }
+      .links a { flex: 1 1 auto; }
     }
   </style>
 </head>
@@ -345,78 +324,93 @@
           <h1>Thomas Dirks</h1>
           <p class="subtitle">M&amp;A · Corporate Finance</p>
 
-          <div class="links">
-            <a href="https://www.linkedin.com/in/tjdirks" target="_blank">LinkedIn</a>
-            <a class="secondary" id="emailLink" data-user="thomas" data-domain="t-dirks.de">Kontakt</a>
-          </div>
+          <nav class="links" aria-label="Links">
+            <a href="https://www.linkedin.com/in/tjdirks" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+            <a class="secondary" id="emailLink" href="#" data-user="thomas" data-domain="t-dirks.de">Contact</a>
+          </nav>
         </div>
 
-        <div class="toggle-container">
+        <label class="toggle-container">
           <span>Dark Mode</span>
-          <label class="toggle">
-            <input type="checkbox" id="darkToggle">
+          <span class="toggle">
+            <input type="checkbox" id="darkToggle" role="switch">
             <span class="slider"></span>
-          </label>
-        </div>
+          </span>
+        </label>
       </header>
 
-      <!-- Hidden Emergency Info (minimal version) -->
-      <section class="emergency" id="emergencyContainer">
-        <button id="revealButton">🔒 Emergency</button>
+      <section class="emergency" aria-label="Emergency information">
+        <button type="button" id="revealButton" aria-expanded="false" aria-controls="unlockSection">🔒 Emergency</button>
 
-        <div id="unlockSection" style="display: none; margin-top: 1rem;">
-          <input type="password" id="emergencyPass" placeholder="Enter passcode">
-          <button class="action-button" onclick="decryptData()">Unlock</button>
-          <pre id="emergencyInfo" style="white-space: pre-wrap; display: none;"></pre>
+        <div id="unlockSection" hidden>
+          <form class="unlock-row" id="unlockForm">
+            <input type="password" id="emergencyPass" placeholder="Enter passcode" aria-label="Passcode" autocomplete="off">
+            <button type="submit" class="action-button">Unlock</button>
+          </form>
+          <p class="error" id="emergencyError" role="alert" hidden>Invalid passcode.</p>
+          <div id="emergencyResult" hidden>
+            <pre id="emergencyInfo"></pre>
+            <button type="button" id="hideButton">Hide</button>
+          </div>
         </div>
       </section>
     </main>
   </div>
 
-<!-- CryptoJS Library -->
-<script src="crypto-js.min.js"></script>
-<script>
-  const emailLink = document.getElementById('emailLink');
-  if (emailLink) {
-    const user = emailLink.dataset.user;
-    const domain = emailLink.dataset.domain;
-    const address = `${user}@${domain}`;
-    emailLink.href = `mailto:${address}`;
-  }
-
-  const encrypted = "U2FsdGVkX1/KY71QQxzMiekEDYlZ8CJ/2KpVF7+r8WeGCeWy6awReP1r5bwcPVeptk7WGW1zEL5lCxMkTqCso0DWJZdoBsF0SxoKRMo1cak=";
-
-  document.getElementById('revealButton').addEventListener('click', () => {
-    document.getElementById('unlockSection').style.display = 'block';
-    document.getElementById('revealButton').style.display = 'none';
-  });
-
-  function decryptData() {
-    const pass = document.getElementById('emergencyPass').value;
-    try {
-      const decrypted = CryptoJS.AES.decrypt(encrypted, pass);
-      const text = decrypted.toString(CryptoJS.enc.Utf8);
-      if (!text) throw new Error('Wrong password');
-      document.getElementById('emergencyInfo').textContent = text;
-      document.getElementById('emergencyInfo').style.display = 'block';
-    } catch (e) {
-      alert("Invalid passcode.");
-    }
-  }
-</script>
-
+  <script src="crypto-js.min.js"></script>
   <script>
-    const toggle = document.getElementById('darkToggle');
-    const body = document.body;
+    const $ = (id) => document.getElementById(id);
 
-    if (localStorage.getItem('dark-mode') === 'true') {
-      body.classList.add('dark-mode');
-      toggle.checked = true;
-    }
+    // Contact link: assembled at runtime to keep the address out of the static HTML
+    const emailLink = $('emailLink');
+    emailLink.href = `mailto:${emailLink.dataset.user}@${emailLink.dataset.domain}`;
 
+    // Dark mode (initial state is set by the inline script in <head>)
+    const root = document.documentElement;
+    const toggle = $('darkToggle');
+    toggle.checked = root.classList.contains('dark');
     toggle.addEventListener('change', () => {
-      body.classList.toggle('dark-mode');
-      localStorage.setItem('dark-mode', body.classList.contains('dark-mode'));
+      root.classList.toggle('dark', toggle.checked);
+      try { localStorage.setItem('dark-mode', toggle.checked); } catch (e) {}
+    });
+
+    // Emergency info
+    const encrypted = "U2FsdGVkX1/KY71QQxzMiekEDYlZ8CJ/2KpVF7+r8WeGCeWy6awReP1r5bwcPVeptk7WGW1zEL5lCxMkTqCso0DWJZdoBsF0SxoKRMo1cak=";
+    const revealButton = $('revealButton');
+    const unlockSection = $('unlockSection');
+    const passInput = $('emergencyPass');
+    const errorMsg = $('emergencyError');
+    const result = $('emergencyResult');
+    const info = $('emergencyInfo');
+
+    revealButton.addEventListener('click', () => {
+      unlockSection.hidden = false;
+      revealButton.hidden = true;
+      revealButton.setAttribute('aria-expanded', 'true');
+      passInput.focus();
+    });
+
+    $('unlockForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      let text = '';
+      try {
+        text = CryptoJS.AES.decrypt(encrypted, passInput.value).toString(CryptoJS.enc.Utf8);
+      } catch (err) {}
+      if (!text) {
+        errorMsg.hidden = false;
+        result.hidden = true;
+        return;
+      }
+      errorMsg.hidden = true;
+      info.textContent = text;
+      result.hidden = false;
+    });
+
+    $('hideButton').addEventListener('click', () => {
+      info.textContent = '';
+      result.hidden = true;
+      passInput.value = '';
+      passInput.focus();
     });
   </script>
 </body>
