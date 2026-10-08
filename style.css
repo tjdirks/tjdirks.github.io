@@ -153,28 +153,9 @@ body {
 .top {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 1rem;
   margin-bottom: clamp(2rem, 6vw, 3.5rem);
-}
-
-.status {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  font-size: 0.8rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.status::before {
-  content: "";
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 12px var(--accent);
 }
 
 .pill {
@@ -355,9 +336,14 @@ h1 {
   .links .btn { flex: 1 1 auto; }
 }
 
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
 .chip {
-  display: inline-block;
-  margin: 1.1rem 0 1.5rem;
   padding: 0.35rem 0.9rem;
   border-radius: 999px;
   border: 1px solid var(--line);
@@ -367,11 +353,11 @@ h1 {
   letter-spacing: 0.02em;
 }
 
-h1 + .chip { margin-top: 0; }
-
 .foot {
+  display: flex;
+  justify-content: center;
+  gap: 1.25rem;
   margin-top: 1.5rem;
-  text-align: center;
   font-size: 0.8rem;
 }
 
