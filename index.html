@@ -98,7 +98,6 @@
       box-shadow: var(--shadow);
       -webkit-backdrop-filter: blur(16px);
       backdrop-filter: blur(16px);
-      animation: spin 6s linear infinite;
     }
 
     .card::before {
@@ -119,6 +118,7 @@
       -webkit-mask-composite: xor;
       mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
       pointer-events: none;
+      animation: spin 6s linear infinite;
     }
 
     @keyframes spin {
@@ -126,7 +126,7 @@
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .card { animation: none; }
+      .card::before { animation: none; }
       * { transition: none !important; }
     }
 
