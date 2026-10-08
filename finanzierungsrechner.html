@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Immobilien-Finanzierungsrechner · Thomas Dirks</title>
+  <meta name="description" content="Annuitätendarlehen, Anschlussfinanzierung, LTV und Monte-Carlo-Simulation für Immobilienfinanzierungen.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2305080f'/%3E%3Ctext x='32' y='44' font-family='sans-serif' font-size='30' font-weight='700' text-anchor='middle' fill='%2338bdf8'%3ETD%3C/text%3E%3C/svg%3E">
+
+  <script>
+    (function () {
+      var dark = true;
+      try { dark = localStorage.getItem('dark-mode') !== 'false'; } catch (e) {}
+      if (dark) document.documentElement.classList.add('dark');
+    })();
+  </script>
+
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --c-int: #dc2626;
+      --c-val: #059669;
+      --c-debt: #64748b;
+      --c-warn: #b45309;
+      --c-grid: rgba(11, 18, 32, 0.1);
+    }
+
+    :root.dark {
+      --c-int: #f87171;
+      --c-val: #34d399;
+      --c-debt: #94a3b8;
+      --c-warn: #fbbf24;
+      --c-grid: rgba(255, 255, 255, 0.1);
+    }
+
+    .page { place-items: start center; padding: 1.5rem 1.5rem 3rem; }
+    .wrap { width: min(1240px, 100%); }
+    .bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; }
+    .back { color: var(--muted); text-decoration: none; font-size: 0.9rem; }
+    .back:hover { color: var(--text); }
+    h1 { font-size: clamp(1.9rem, 5vw, 3rem); margin: 0; }
+    h2 { margin: 0 0 1rem; font-size: 1.05rem; }
+    .lead { max-width: 62ch; margin: 0.75rem 0 1.75rem; color: var(--muted); line-height: 1.55; }
+
+    .seg { display: inline-flex; gap: 4px; padding: 4px; margin-bottom: 1.5rem; border-radius: 999px; border: 1px solid var(--line); background: var(--glass); }
+    .seg button { font: inherit; font-weight: 600; padding: 0.55rem 1.2rem; border: 0; border-radius: 999px; background: none; color: var(--muted); cursor: pointer; }
+    .seg button.on { color: #04101c; background: linear-gradient(135deg, #7dd3fc, #a5b4fc); }
+
+    .grid { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 1.25rem; align-items: start; }
+    .col { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.25rem; }
+    .panel { padding: 1.4rem; border-radius: 24px; border: 1px solid var(--line); background: var(--glass-strong); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
+
+    .ctl { margin-bottom: 1.4rem; }
+    .row { display: flex; justify-content: space-between; gap: 0.75rem; }
+    .v { color: var(--accent-text); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    input[type=range] { width: 100%; margin: 0.6rem 0 0.1rem; accent-color: var(--accent); }
+    .rng { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--muted); }
+    .hint, .note { font-size: 0.85rem; line-height: 1.55; color: var(--muted); }
+    .hint { margin-top: 0.4rem; }
+    .note { margin: 1rem 0 0; }
+    .note b, summary { color: var(--text); }
+    .check { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; font-size: 0.9rem; }
+    .off input, .off .rng, .off .hint { opacity: 0.5; }
+
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr)); gap: 0.75rem; }
+    .tile { padding: 0.9rem 1rem; border-radius: 18px; border: 1px solid var(--line); background: var(--glass); }
+    .tile .k, .tile .s { font-size: 0.85rem; line-height: 1.4; color: var(--muted); }
+    .tile .n { margin: 0.25rem 0; font-size: 1.4rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+    .warn { margin-top: 1rem; padding: 0.8rem 1rem; border-radius: 14px; border: 1px solid var(--c-warn); font-size: 0.9rem; line-height: 1.5; }
+    
+    .charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr)); gap: 1.25rem; }
+    canvas { display: block; width: 100%; height: 320px; }
+    .legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1.1rem; margin-top: 0.75rem; font-size: 0.85rem; color: var(--muted); }
+    .legend i { display: inline-block; width: 10px; height: 10px; margin-right: 0.4rem; border-radius: 3px; }
+
+    .tbl { overflow: auto; max-height: 480px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+    th, td { padding: 0.55rem 0.7rem; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--line); }
+    th:first-child, td:first-child { text-align: left; }
+    th { position: sticky; top: 0; background: var(--bg); color: var(--muted); font-weight: 600; }
+
+    .cta { margin-top: 0.5rem; border: 0; cursor: pointer; font: inherit; }
+    details.panel p { margin: 0.75rem 0 0; }
+    summary { cursor: pointer; font-weight: 600; }
+
+    @media (max-width: 960px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+    @media (max-width: 520px) { .page { padding: 1rem 0.75rem 2rem; } .seg { display: flex; } .seg button { flex: 1; padding: 0.55rem 0.5rem; font-size: 0.85rem; white-space: nowrap; } .panel { padding: 1.1rem; } canvas { height: 260px; } }
+  </style>
+</head>
+<body>
+  <div class="backdrop" aria-hidden="true">
+    <span class="orb"></span><span class="orb"></span><span class="orb"></span>
+  </div>
+
+  <div class="page">
+    <div class="wrap">
+      <div class="bar">
+        <a class="back" href="./">← Back</a>
+        <label class="pill">
+          <span>Dark</span>
+          <span class="toggle">
+            <input type="checkbox" id="darkToggle" role="switch">
+            <span class="slider"></span>
+          </span>
+        </label>
+      </div>
+
+      <h1>Immobilien-Finanzierungsrechner</h1>
+      <p class="lead">Annuitätendarlehen mit monatlicher Tilgung, Immobilienwertentwicklung, LTV und Anschlussfinanzierung.</p>
+
+      <div class="seg" role="tablist">
+        <button class="on" data-tab="calc" role="tab">Finanzierungsrechner</button>
+        <button data-tab="mc" role="tab">Monte-Carlo-Simulation</button>
+      </div>
+
+      <section id="calc" class="grid">
+        <div class="panel">
+          <h2>Finanzierungsannahmen</h2>
+          <div id="calcCtl"></div>
+          <p class="note"><b>Standardeinstellung Oktober 2026:</b> 650.000 € Kaufpreis · 200.000 € Eigenkapital · 10,5 % Nebenkosten · 4,20 % Sollzins · 2,50 % Tilgung · 10 Jahre Zinsbindung · 5,00 % Anschlusszins · Annuität nach Zinsbindung wie heute · 2,00 % Wertsteigerung.</p>
+        </div>
+
+        <div class="col">
+          <div class="stats" id="stats"></div>
+
+          <div class="panel">
+            <h2>Anschlussfinanzierung</h2>
+            <div class="stats" id="refi"></div>
+            <div id="warn"></div>
+          </div>
+
+          <div class="charts">
+            <div class="panel">
+              <h2>Jährlicher Schuldendienst</h2>
+              <canvas id="cash" role="img" aria-label="Jährlicher Schuldendienst nach Zinsen und Tilgung"></canvas>
+              <div class="legend" data-legend="--c-int:Zinsen,--accent:Tilgung"></div>
+            </div>
+            <div class="panel">
+              <h2>Restschuld vs. Immobilienwert</h2>
+              <canvas id="ltv" role="img" aria-label="Restschuld und Immobilienwert nach Jahren"></canvas>
+              <div class="legend" data-legend="--c-debt:Restschuld,--c-val:Immobilienwert"></div>
+              <p class="note" id="ltvNote"></p>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h2>Finanzierungsprofil nach Jahren</h2>
+            <div class="tbl">
+              <table>
+                <thead><tr><th>Jahr</th><th>Zinsen</th><th>Tilgung</th><th>Restschuld</th><th>Immobilienwert</th><th>LTV</th><th>Wert netto Restschuld*</th></tr></thead>
+                <tbody id="rows"></tbody>
+              </table>
+            </div>
+            <p class="note">* In Jahr 0 entspricht der Wert dem eingesetzten Eigenkapital, ab Jahr 1 Immobilienwert minus Restschuld. Kein Nettoverkaufserlös: Verkaufskosten, Instandhaltung, Steuern und sonstige Eigentümerkosten sind nicht berücksichtigt.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="mc" class="grid" hidden>
+        <div class="panel">
+          <h2>Simulationsannahmen</h2>
+          <p class="note" style="margin:0 0 1.4rem" id="mcLink"></p>
+          <div id="mcCtl"></div>
+          <button class="btn primary cta" id="run">Neu simulieren</button>
+          <p class="note">Immobilienwerte folgen einer lognormalen Renditesimulation, der Anschlusszins einem mean-reverting Prozess. Der Zins am Ende der Zinsbindung gilt als Anschlusszins für die Restlaufzeit. Die Tilgung danach folgt den Einstellungen des Rechners, inklusive „Annuität wie heute beibehalten“.</p>
+        </div>
+
+        <div class="col">
+          <div class="stats" id="mcStats"></div>
+
+          <div class="panel">
+            <h2>Restschuld vs. Immobilienwert</h2>
+            <canvas id="mcMain" role="img" aria-label="Simulierte Verteilung von Restschuld und Immobilienwert"></canvas>
+            <div class="legend" data-legend="--c-val:Immobilienwert,--c-debt:Restschuld"></div>
+            <p class="note">Linie: Median · Bänder: P25–P75 und P10–P90.</p>
+          </div>
+
+          <div class="charts">
+            <div class="panel">
+              <h2>LTV-Entwicklung</h2>
+              <canvas id="mcLtv" role="img" aria-label="Simulierte Verteilung des LTV"></canvas>
+            </div>
+            <div class="panel">
+              <h2>Entwicklung Anschlusszins</h2>
+              <canvas id="mcRate" role="img" aria-label="Simulierte Verteilung des Zinssatzes"></canvas>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h2>Perzentile nach Jahren</h2>
+            <div class="tbl">
+              <table>
+                <thead><tr><th>Jahr</th><th>Wert P10</th><th>Wert Median</th><th>Wert P90</th><th>Schuld P10</th><th>Schuld Median</th><th>Schuld P90</th><th>LTV Median</th></tr></thead>
+                <tbody id="mcRows"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <details class="panel" style="margin-top:1.25rem">
+        <summary>Modellhinweise</summary>
+        <p class="note">Während der Zinsbindung wird ein klassisches Annuitätendarlehen mit monatlicher Verzinsung und Zahlung gerechnet. Für die Anschlussfinanzierung wird die Restschuld mit dem gewählten Anschlusszins neu finanziert. Standardmäßig bleibt die heutige Monatsrate konstant und die erforderliche Tilgung wird daraus abgeleitet; alternativ kann sie separat gewählt werden. Sondertilgungen, Gebühren, laufende Hausnebenkosten, Instandhaltung, Steuern und Verkaufskosten sind nicht berücksichtigt.</p>
+        <p class="note"><b>LTV:</b> Restschuld / modellierter Immobilienwert, rein deskriptiv. Einkommen, Liquidität, Objektqualität und bankinterner Beleihungswert fließen nicht ein.</p>
+        <p class="note"><b>Refinanzierungsrisiko:</b> Der Anschlusszins ist eine Szenarioannahme, keine Prognose. Die 4,20 % Sollzins sind als realistische Mitte für Oktober 2026 gewählt, kein individuelles Angebot; tatsächliche Konditionen hängen von Beleihungsauslauf, Bonität, Objekt, Zinsbindung und Anbieter ab.</p>
+        <p class="note"><b>Nebenkosten:</b> In Niedersachsen beträgt die Grunderwerbsteuer 5 %. Rund 2 % für Notar/Grundbuch plus ggf. Makler ergeben gerundet 10,5 %.</p>
+      </details>
+
+      <footer class="foot"><a href="imprint.html">Imprint</a></footer>
+    </div>
+  </div>
+
+<script>
+const $ = id => document.getElementById(id);
+const nf = (min, max = min, o = {}) => new Intl.NumberFormat('de-DE', { minimumFractionDigits: min, maximumFractionDigits: max, ...o }).format;
+const eur = nf(0, 0, { style: 'currency', currency: 'EUR' });
+const d0 = nf(0), d1 = nf(1), d2 = nf(2);
+const pct = v => d2(v) + ' %';
+const jahre = v => v + ' Jahre';
+const pp = v => d2(v) + ' pp';
+const short = v => v >= 1e6 ? d1(v / 1e6) + ' Mio. €' : d0(v / 1e3) + ' T€';
+
+// [id, label, min, max, step, value, format, hint]
+const CALC = [
+  ['price', 'Kaufpreis', 150000, 2000000, 5000, 650000, eur],
+  ['equity', 'Eigenkapital', 0, 1000000, 1000, 200000, eur, 'Maximal können exakt Kaufpreis + Kaufnebenkosten als Eigenkapital eingesetzt werden.'],
+  ['costs', 'Kaufnebenkosten', 0, 15, 0.25, 10.5, pct, 'Prozent des Kaufpreises für Grunderwerbsteuer, Notar/Grundbuch und ggf. Makler.'],
+  ['rate', 'Sollzins während Zinsbindung', 2, 7, 0.05, 4.2, pct, 'Nominaler Sollzins p.a. während der gewählten Zinsbindung.'],
+  ['amort', 'Anfängliche Tilgung', 1, 6, 0.1, 2.5, pct, 'Anfänglicher Tilgungssatz bezogen auf das Startdarlehen.'],
+  ['fixed', 'Zinsbindung', 5, 20, 1, 10, jahre, 'Danach wird die Restschuld zu einem neuen Anschlusszins neu finanziert.'],
+  ['refiRate', 'Anschlusszins', 2, 8, 0.1, 5, pct, 'Szenarioannahme für den Sollzins nach der Zinsbindung, kein Marktangebot.'],
+  ['refiAmort', 'Tilgung nach Zinsbindung', 1, 6, 0.1, 2.5, pct, ''],
+  ['appr', 'Immobilienwertsteigerung', -5, 6, 0.25, 2, pct, 'Nominale durchschnittliche Wertänderung p.a.; keine Prognose.'],
+  ['years', 'Betrachtungszeitraum', 5, 30, 1, 20, jahre]
+];
+const MC = [
+  ['nsim', 'Simulationen', 1000, 15000, 500, 5000, d0],
+  ['mu', 'Ø Immobilienwertentwicklung', -2, 6, 0.25, 2, pct, 'Erwartete nominale jährliche Wertentwicklung im Modell.'],
+  ['vol', 'Immobilienpreis-Volatilität', 1, 12, 0.5, 6, pct, 'Jährliche Schwankungsbreite der Immobilienpreisrendite.'],
+  ['rmean', 'Langfristiger Anschlusszins', 2, 7, 0.1, 4.5, pct, 'Mittelwert, zu dem der simulierte Zins langfristig zurückkehrt.'],
+  ['rvol', 'Zins-Volatilität', 0.25, 2.5, 0.05, 1, pp, 'Jährlicher Schock auf den Zins.'],
+  ['kappa', 'Zins-Mittelwertregression', 5, 80, 5, 25, pct, 'Anteil des Abstands zum Langfristmittel, der pro Jahr zurückgebildet wird.'],
+  ['corr', 'Korrelation Preise / Zins', -0.6, 0.3, 0.05, -0.2, d2, 'Negativ: höhere Zinsen gehen tendenziell mit niedrigeren Preisrenditen einher.']
+];
+
+function controls(host, defs) {
+  $(host).innerHTML = defs.map(([id, label, min, max, step, value, , hint]) => `
+    <div class="ctl" id="c-${id}">
+      <div class="row"><span>${label}</span><b class="v" id="o-${id}"></b></div>
+      <input id="${id}" type="range" min="${min}" max="${max}" step="${step}" value="${value}">
+      <div class="rng"><span id="lo-${id}"></span><span id="hi-${id}"></span></div>
+      ${hint !== undefined ? `<div class="hint" id="h-${id}">${hint}</div>` : ''}
+    </div>`).join('');
+}
+function show(defs) {
+  defs.forEach(([id, , , , , , f]) => {
+    const e = $(id);
+    $('o-' + id).textContent = f(+e.value);
+    $('lo-' + id).textContent = f(+e.min);
+    $('hi-' + id).textContent = f(+e.max);
+  });
+}
+const tile = ([k, n, s = '']) => `<div class="tile"><div class="k">${k}</div><div class="n">${n}</div><div class="s">${s}</div></div>`;
+
+controls('calcCtl', CALC);
+controls('mcCtl', MC);
+$('c-refiAmort').querySelector('.row').insertAdjacentHTML('afterend',
+  '<label class="check"><input id="keep" type="checkbox" checked> Annuität wie heute beibehalten</label>');
+document.querySelectorAll('[data-legend]').forEach(el => {
+  el.innerHTML = el.dataset.legend.split(',').map(s => {
+    const [c, t] = s.split(':');
+    return `<span><i style="background:var(${c})"></i>${t}</span>`;
+  }).join('');
+});
+
+// ---- Model -------------------------------------------------------------
+function model() {
+  const v = id => +$(id).value;
+  const need = v('price') * (1 + v('costs') / 100);
+  $('equity').max = Math.round(need);
+  $('fixed').max = v('years');
+  const equity = Math.min(v('equity'), need), loan = need - equity, rate = v('rate') / 100;
+  return {
+    price: v('price'), need, equity, loan, rate, years: v('years'),
+    pay0: loan * (rate + v('amort') / 100) / 12,
+    fixed: Math.min(v('fixed'), v('years')),
+    refiRate: v('refiRate') / 100, refiAmort: v('refiAmort') / 100,
+    keep: $('keep').checked, appr: v('appr') / 100
+  };
+}
+
+// One year of monthly annuity payments.
+function year(debt, rate, pay) {
+  let i = 0, t = 0;
+  for (let m = 0; m < 12 && debt > 0; m++) {
+    const a = debt * rate / 12, p = Math.max(0, Math.min(pay, debt + a) - a);
+    i += a; t += p; debt = Math.max(0, debt - p);
+  }
+  return { i, t, debt };
+}
+
+function calc() {
+  const m = model();
+  const rows = [{ year: 0, i: 0, t: 0, debt: m.loan, value: m.price, ltv: m.loan / m.price }];
+  let debt = m.loan, value = m.price, rate = m.rate, pay = m.pay0, refi = null;
+  for (let y = 1; y <= m.years; y++) {
+    if (y === m.fixed + 1) {
+      rate = m.refiRate;
+      const implied = debt > 0 ? m.pay0 * 12 / debt - rate : 0;
+      const am = m.keep ? Math.max(0, implied) : m.refiAmort;
+      pay = m.keep ? m.pay0 : debt * (rate + am) / 12;
+      refi = { debt, am, pay, ok: implied >= 0 };
+    }
+    const s = year(debt, rate, pay);
+    debt = s.debt; value *= 1 + m.appr;
+    rows.push({ year: y, i: s.i, t: s.t, debt, value, ltv: debt / value });
+  }
+  const end = rows[m.years], i1 = m.loan * m.rate / 12;
+
+  show(CALC);
+  $('refiAmort').disabled = m.keep;
+  $('c-refiAmort').classList.toggle('off', m.keep);
+  $('o-refiAmort').textContent = m.keep ? (refi ? pct(refi.am * 100) : '–') : pct(m.refiAmort * 100);
+  $('h-refiAmort').textContent = m.keep
+    ? 'Die heutige Monatsrate bleibt bestehen; die Tilgung wird aus Restschuld und Anschlusszins abgeleitet.'
+    : 'Tilgungssatz auf die Restschuld zu Beginn der Anschlussfinanzierung.';
+
+  $('stats').innerHTML = [
+    ['Gesamtkosten', eur(m.need), 'Kaufpreis + Nebenkosten'],
+    ['Darlehen', eur(m.loan), pct(m.loan / m.need * 100) + ' der Gesamtkosten'],
+    ['Monatsrate', eur(m.pay0), `1. Monat: ${eur(i1)} Zins · ${eur(Math.min(m.pay0 - i1, m.loan))} Tilgung`],
+    ['Start-LTV', pct(m.loan / m.price * 100), 'Darlehen / Kaufpreis'],
+    ['End-LTV', pct(end.ltv * 100), 'nach ' + m.years + ' Jahren']
+  ].map(tile).join('');
+
+  $('refi').innerHTML = refi ? [
+    ['Restschuld bei Zinsbindungsende', eur(refi.debt), 'Ende Jahr ' + m.fixed],
+    ['Anschlusszins', pct(m.refiRate * 100), 'Szenarioannahme'],
+    ['Tilgung', pct(refi.am * 100), 'nach Zinsbindung'],
+    ['Neue Monatsrate', eur(refi.pay), m.keep ? 'Annuität wie heute' : 'bei gewählter Tilgung'],
+    ['Monatsrate vs. heute', (refi.pay >= m.pay0 ? '+' : '') + eur(refi.pay - m.pay0), 'pro Monat']
+  ].map(tile).join('') : '<p class="note" style="margin:0">Keine Refinanzierung innerhalb des Betrachtungszeitraums.</p>';
+
+  $('warn').innerHTML = refi ? [
+    m.keep && !refi.ok && '<b>Annuität beibehalten nicht möglich:</b> Die heutige Monatsrate liegt unter den reinen Zinsen auf die Restschuld. Die Tilgung wird deshalb mit 0 % angesetzt.',
+    m.refiRate > m.rate + 0.0001 && '<b>Refinanzierungsrisiko:</b> Der Anschlusszins liegt über dem aktuellen Sollzins.' + (m.keep ? ' Die Monatsrate bleibt konstant, dafür ändert sich die Tilgung.' : '')
+  ].filter(Boolean).map(t => `<div class="warn">${t}</div>`).join('') : '';
+
+  $('rows').innerHTML = rows.map(d => `<tr><td>${d.year}</td><td>${eur(d.i)}</td><td>${eur(d.t)}</td><td>${eur(d.debt)}</td><td>${eur(d.value)}</td><td>${pct(d.ltv * 100)}</td><td>${d.year ? eur(d.value - d.debt) : eur(m.equity) + ' EK'}</td></tr>`).join('');
+  $('ltvNote').textContent = `LTV nach ${m.years} Jahren: ${pct(end.ltv * 100)} · Wertänderung: ${eur(end.value - m.price)}`;
+
+  view.calc = () => {
+    const sv = rows.slice(1);
+    let p = plot($('cash'), { n: sv.length, bars: true, hi: Math.max(...sv.map(d => d.i + d.t), 1) * 1.1, fmt: short, x0: 1 });
+    sv.forEach((d, k) => {
+      const w = p.bw * 0.7, x = p.px(k) - w / 2, yi = p.py(d.i), yt = p.py(d.i + d.t);
+      p.x.fillStyle = css('--c-int'); p.x.fillRect(x, yi, w, p.base - yi);
+      p.x.fillStyle = css('--accent'); p.x.fillRect(x, yt, w, yi - yt);
+    });
+    p = plot($('ltv'), { n: rows.length, bars: true, hi: Math.max(...rows.map(d => Math.max(d.debt, d.value)), 1) * 1.12, fmt: short });
+    rows.forEach((d, k) => {
+      const w = Math.min(18, p.bw * 0.38);
+      p.x.fillStyle = css('--c-debt'); p.x.fillRect(p.px(k) - w, p.py(d.debt), w, p.base - p.py(d.debt));
+      p.x.fillStyle = css('--c-val'); p.x.fillRect(p.px(k), p.py(d.value), w, p.base - p.py(d.value));
+    });
+    guide(p, { i: m.fixed, label: 'Zinsbindung', color: '--c-warn' });
+  };
+  redraw();
+}
+
+// ---- Monte Carlo -------------------------------------------------------
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+function gauss2() {
+  const u = 1 - Math.random(), v = Math.random(), r = Math.sqrt(-2 * Math.log(u));
+  return [r * Math.cos(2 * Math.PI * v), r * Math.sin(2 * Math.PI * v)];
+}
+function quant(a, q) {
+  const x = (a.length - 1) * q, lo = Math.floor(x), hi = Math.ceil(x);
+  return a[lo] + (a[hi] - a[lo]) * (x - lo);
+}
+
+function simulate() {
+  show(MC);
+  const m = model(), v = id => +$(id).value, n = v('nsim'), T = m.years, F = m.fixed;
+  const mu = v('mu') / 100, vol = v('vol') / 100, mean = v('rmean') / 100, rvol = v('rvol') / 100;
+  const k = v('kappa') / 100, c = v('corr'), s = Math.sqrt(1 - c * c);
+  const mk = () => Array.from({ length: T + 1 }, () => new Float64Array(n));
+  const H = mk(), D = mk(), L = mk(), R = mk();
+
+  for (let i = 0; i < n; i++) {
+    let h = m.price, r = m.rate, debt = m.loan, rate = m.rate, pay = m.pay0, rF = 0;
+    H[0][i] = h; D[0][i] = debt; L[0][i] = debt / h; R[0][i] = r;
+    for (let y = 1; y <= T; y++) {
+      const [z1, z2] = gauss2();
+      h *= Math.exp(mu - 0.5 * vol * vol + vol * z1);
+      r = clamp(r + k * (mean - r) + rvol * (c * z1 + s * z2), 0.01, 0.12);
+      if (y === F) rF = r;
+      if (y === F + 1) { rate = rF; pay = m.keep ? m.pay0 : debt * (rF + m.refiAmort) / 12; }
+      debt = year(debt, rate, pay).debt;
+      H[y][i] = h; D[y][i] = debt; L[y][i] = debt / h; R[y][i] = r;
+    }
+  }
+
+  const atRefi = L[F].filter(x => x > 1).length / n;
+  const P = A => { A.forEach(a => a.sort()); return [0.1, 0.25, 0.5, 0.75, 0.9].map(q => A.map(a => quant(a, q))); };
+  const [hp, dp, lp, rp] = [H, D, L, R].map(P);
+  const med = (p, f) => f(p[2][T]), band = (p, f) => `P10–P90: ${f(p[0][T])} bis ${f(p[4][T])}`;
+  const pc = x => pct(x * 100);
+
+  $('mcLink').innerHTML = `<b>Aus dem Rechner:</b> Kaufpreis ${eur(m.price)} · Darlehen ${eur(m.loan)} · Zinsbindung ${F} Jahre · Zeitraum ${T} Jahre · Tilgung nach Zinsbindung: ${m.keep ? 'Annuität wie heute' : pct(m.refiAmort * 100)}.`;
+  $('mcStats').innerHTML = [
+    ['Immobilienwert am Ende · Median', med(hp, eur), band(hp, eur)],
+    ['Restschuld am Ende · Median', med(dp, eur), band(dp, eur)],
+    ['LTV am Ende · Median', med(lp, pc), band(lp, pc)],
+    ['Wahrscheinlichkeit LTV > 100 %', pc(atRefi), 'am Ende der Zinsbindung']
+  ].map(tile).join('');
+  $('mcRows').innerHTML = hp[0].map((_, y) => `<tr><td>${y}</td><td>${eur(hp[0][y])}</td><td>${eur(hp[2][y])}</td><td>${eur(hp[4][y])}</td><td>${eur(dp[0][y])}</td><td>${eur(dp[2][y])}</td><td>${eur(dp[4][y])}</td><td>${pc(lp[2][y])}</td></tr>`).join('');
+
+  view.mc = () => {
+    const refi = { i: F, label: 'Zinsbindung', color: '--c-warn' };
+    fan($('mcMain'), [{ ps: hp, color: '--c-val' }, { ps: dp, color: '--c-debt' }], {
+      fmt: short, lo: Math.max(0, Math.min(...hp[0], ...dp[0]) * 0.92), hi: Math.max(...hp[4], ...dp[4]) * 1.08,
+      guides: [{ v: m.price, label: 'Kaufpreis' }, refi]
+    });
+    fan($('mcLtv'), [{ ps: lp, color: '--c-warn' }], {
+      fmt: v => d0(v * 100) + ' %', lo: 0, hi: Math.max(Math.max(...lp[4]) * 1.08, 0.2),
+      guides: [{ v: 1, label: '100 %', color: '--c-int' }, refi]
+    });
+    fan($('mcRate'), [{ ps: rp, color: '--c-warn' }], {
+      fmt: v => d1(v * 100) + ' %', lo: Math.max(0, Math.min(...rp[0]) - 0.005), hi: Math.min(0.12, Math.max(...rp[4]) + 0.005),
+      guides: [{ v: 0.06, label: '6 %', color: '--c-int' }, refi]
+    });
+  };
+  redraw();
+}
+
+// ---- Charts ------------------------------------------------------------
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+// Sets up a canvas with grid, y labels and x labels; returns scales.
+function plot(canvas, { n, bars, lo = 0, hi, fmt, x0 = 0 }) {
+  const r = canvas.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  canvas.width = r.width * dpr; canvas.height = r.height * dpr;
+  const x = canvas.getContext('2d');
+  x.scale(dpr, dpr);
+  x.font = '12px ' + getComputedStyle(document.body).fontFamily;
+  const L = 62, T = 14, cw = r.width - L - 12, ch = r.height - T - 34;
+  const px = i => L + (bars ? (i + 0.5) / n : i / (n - 1)) * cw, py = v => T + (1 - (v - lo) / (hi - lo)) * ch;
+  x.strokeStyle = css('--c-grid'); x.fillStyle = css('--muted'); x.lineWidth = 1; x.textAlign = 'right';
+  for (let i = 0; i <= 5; i++) {
+    const v = lo + (hi - lo) * i / 5, y = py(v);
+    x.beginPath(); x.moveTo(L, y); x.lineTo(L + cw, y); x.stroke();
+    x.fillText(fmt(v), L - 8, y + 4);
+  }
+  x.textAlign = 'center';
+  const step = Math.ceil(n / 8);
+  for (let i = 0; i < n; i += step) x.fillText(i + x0, px(i), r.height - 16);
+  x.fillText('Jahre', L + cw / 2, r.height - 2);
+  return { x, n, lo, hi, L, T, cw, px, py, base: py(lo), bw: cw / n };
+}
+
+// Dashed reference line: vertical at index i, or horizontal at value v.
+function guide(p, { i, v, label, color = '--muted' }) {
+  const x = p.x;
+  x.save();
+  x.strokeStyle = x.fillStyle = css(color);
+  x.setLineDash([5, 4]);
+  x.beginPath();
+  if (i != null) {
+    if (i <= 0 || i >= p.n) return x.restore();
+    const X = p.px(i);
+    x.moveTo(X, p.T); x.lineTo(X, p.base); x.stroke();
+    x.textAlign = 'center'; x.fillText(label, X, p.T + 12);
+  } else {
+    if (v < p.lo || v > p.hi) return x.restore();
+    const Y = p.py(v);
+    x.moveTo(p.L, Y); x.lineTo(p.L + p.cw, Y); x.stroke();
+    x.textAlign = 'left'; x.fillText(label, p.L + 6, Y - 6);
+  }
+  x.restore();
+}
+
+// Percentile fan: bands P10–P90 and P25–P75 around the median line.
+function fan(canvas, series, { fmt, lo, hi, guides }) {
+  const p = plot(canvas, { n: series[0].ps[0].length, lo, hi, fmt }), x = p.x;
+  series.forEach(({ ps, color }) => {
+    x.fillStyle = x.strokeStyle = css(color);
+    [[0, 4, 0.15], [1, 3, 0.3]].forEach(([a, b, alpha]) => {
+      x.beginPath();
+      ps[b].forEach((v, i) => i ? x.lineTo(p.px(i), p.py(v)) : x.moveTo(p.px(i), p.py(v)));
+      for (let i = ps[a].length - 1; i >= 0; i--) x.lineTo(p.px(i), p.py(ps[a][i]));
+      x.globalAlpha = alpha; x.fill(); x.globalAlpha = 1;
+    });
+    x.lineWidth = 2; x.beginPath();
+    ps[2].forEach((v, i) => i ? x.lineTo(p.px(i), p.py(v)) : x.moveTo(p.px(i), p.py(v)));
+    x.stroke();
+  });
+  guides.forEach(g => guide(p, g));
+}
+
+// ---- Wiring ------------------------------------------------------------
+const view = {};
+let tab = 'calc';
+const redraw = () => view[tab] && view[tab]();
+
+document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => {
+  tab = b.dataset.tab;
+  document.querySelectorAll('.seg button').forEach(x => x.classList.toggle('on', x === b));
+  $('calc').hidden = tab !== 'calc';
+  $('mc').hidden = tab !== 'mc';
+  tab === 'mc' ? simulate() : calc();
+}));
+CALC.forEach(d => $(d[0]).addEventListener('input', calc));
+$('keep').addEventListener('change', calc);
+MC.forEach(d => $(d[0]).addEventListener('input', () => show(MC)));
+$('run').addEventListener('click', simulate);
+window.addEventListener('resize', redraw);
+
+const toggle = $('darkToggle');
+toggle.checked = document.documentElement.classList.contains('dark');
+toggle.addEventListener('change', () => {
+  document.documentElement.classList.toggle('dark', toggle.checked);
+  try { localStorage.setItem('dark-mode', toggle.checked); } catch (e) {}
+  redraw();
+});
+
+calc();
+</script>
+</body>
+</html>
