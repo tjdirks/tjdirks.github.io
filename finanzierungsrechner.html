@@ -33,7 +33,7 @@
       --c-grid: rgba(255, 255, 255, 0.1);
     }
 
-    .page { place-items: start center; padding: 1.5rem 1.5rem 3rem; }
+    .page { grid-template-columns: minmax(0, 1fr); place-items: start center; padding: 1.5rem 1.5rem 3rem; }
     .wrap { width: min(1240px, 100%); }
     .bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; }
     .back { color: var(--muted); text-decoration: none; font-size: 0.9rem; }
@@ -44,6 +44,7 @@
 
     .seg { display: inline-flex; gap: 4px; padding: 4px; margin-bottom: 1.5rem; border-radius: 999px; border: 1px solid var(--line); background: var(--glass); }
     .seg button { font: inherit; font-weight: 600; padding: 0.55rem 1.2rem; border: 0; border-radius: 999px; background: none; color: var(--muted); cursor: pointer; }
+    .seg .short { display: none; }
     .seg button.on { color: #04101c; background: linear-gradient(135deg, #7dd3fc, #a5b4fc); }
 
     .grid { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 1.25rem; align-items: start; }
@@ -84,8 +85,20 @@
     details.panel p { margin: 0.75rem 0 0; }
     summary { cursor: pointer; font-weight: 600; }
 
+    .verdict .big { margin: 0.25rem 0 0.5rem; font-size: clamp(1.4rem, 3.6vw, 2rem); font-weight: 700; letter-spacing: -0.01em; }
+    .verdict .big.buy { color: var(--c-val); }
+    .verdict .big.rent { color: var(--accent-text); }
+    .verdict .note { margin: 0; }
+    .flow { display: grid; gap: 1.1rem; }
+    .flow .lbl { margin-bottom: 0.35rem; font-size: 0.9rem; font-weight: 600; }
+    .flow .fbar { display: flex; height: 2rem; overflow: hidden; border-radius: 10px; border: 1px solid var(--line); }
+    .flow .fbar span { min-width: 2px; }
+    .flow .legend { margin-top: 0.5rem; }
+    .heat th, .heat td { text-align: center; }
+    .heat th:first-child { text-align: left; white-space: normal; min-width: 9rem; }
+    .heat td.cur { box-shadow: inset 0 0 0 2px var(--accent-text); }
     @media (max-width: 960px) { .grid { grid-template-columns: minmax(0, 1fr); } }
-    @media (max-width: 520px) { .page { padding: 1rem 0.75rem 2rem; } .seg { display: flex; } .seg button { flex: 1; padding: 0.55rem 0.5rem; font-size: 0.85rem; white-space: nowrap; } .panel { padding: 1.1rem; } canvas { height: 260px; } }
+    @media (max-width: 520px) { .page { padding: 1rem 0.75rem 2rem; } .seg { display: flex; } .seg button { flex: 1; padding: 0.55rem 0.25rem; font-size: 0.85rem; white-space: nowrap; } .seg .long { display: none; } .seg .short { display: inline; } .panel { padding: 1.1rem; } canvas { height: 260px; } }
   </style>
 </head>
 <body>
@@ -110,8 +123,9 @@
       <p class="lead">Annuitätendarlehen mit monatlicher Tilgung, Immobilienwertentwicklung, LTV und Anschlussfinanzierung.</p>
 
       <div class="seg" role="tablist">
-        <button class="on" data-tab="calc" role="tab">Finanzierungsrechner</button>
-        <button data-tab="mc" role="tab">Monte-Carlo-Simulation</button>
+        <button class="on" data-tab="calc" role="tab"><span class="long">Finanzierungsrechner</span><span class="short">Rechner</span></button>
+        <button data-tab="mc" role="tab"><span class="long">Monte-Carlo-Simulation</span><span class="short">Monte-Carlo</span></button>
+        <button data-tab="br" role="tab"><span class="long">Kaufen oder Mieten</span><span class="short">Kaufen/Mieten</span></button>
       </div>
 
       <section id="calc" class="grid">
@@ -199,11 +213,63 @@
         </div>
       </section>
 
+      <section id="br" class="grid" hidden>
+        <div class="panel">
+          <h2>Annahmen Kaufen oder Mieten</h2>
+          <p class="note" style="margin:0 0 1.4rem" id="brLink"></p>
+          <div id="brCtl"></div>
+          <p class="note">Beide Wege starten mit demselben Eigenkapital. Der günstigere Weg legt die monatliche Differenz zur Rendite der Alternativanlage an. Verglichen wird das Vermögen am Ende des Betrachtungszeitraums.</p>
+        </div>
+
+        <div class="col">
+          <div class="panel verdict" id="brVerdict"></div>
+          <div class="stats" id="brStats"></div>
+
+          <div class="panel">
+            <h2>Vermögensentwicklung</h2>
+            <canvas id="brWealth" role="img" aria-label="Vermögen beim Kaufen und beim Mieten nach Jahren"></canvas>
+            <div class="legend" data-legend="--c-val:Vermögen Kaufen,--accent:Vermögen Mieten"></div>
+            <p class="note">Die Fläche zeigt den Vorsprung: grün, wenn Kaufen vorn liegt, blau, wenn Mieten vorn liegt.</p>
+          </div>
+
+          <div class="charts">
+            <div class="panel">
+              <h2>Monatliche Belastung</h2>
+              <canvas id="brMonthly" role="img" aria-label="Monatliche Kosten beim Kaufen und die Miete nach Jahren"></canvas>
+              <div class="legend" data-legend="--c-val:Kaufen (Rate + Instandhaltung),--accent:Miete"></div>
+            </div>
+            <div class="panel">
+              <h2>Wohin geht das Geld?</h2>
+              <div class="flow" id="brFlow"></div>
+              <p class="note">Summen über den Betrachtungszeitraum. Miete, Zinsen, Instandhaltung und Nebenkosten sind verloren; die Tilgung bleibt als Vermögen in der Immobilie.</p>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h2>Sensitivität</h2>
+            <div class="tbl"><table class="heat" id="brHeat"></table></div>
+            <p class="note" id="brHeatNote"></p>
+          </div>
+
+          <div class="panel">
+            <h2>Vergleich nach Jahren</h2>
+            <div class="tbl">
+              <table>
+                <thead><tr><th>Jahr</th><th>Miete / Monat</th><th>Kaufen / Monat</th><th>Differenz / Monat</th><th>Immobilienwert</th><th>Restschuld</th><th>Vermögen Kaufen</th><th>Vermögen Mieten</th><th>Vorteil Kaufen</th></tr></thead>
+                <tbody id="brRows"></tbody>
+              </table>
+            </div>
+            <p class="note">Differenz = Kosten Kaufen minus Miete. Ist sie positiv, legt der Mieter sie an, sonst der Käufer.</p>
+          </div>
+        </div>
+      </section>
+
       <details class="panel" style="margin-top:1.25rem">
         <summary>Modellhinweise</summary>
-        <p class="note">Während der Zinsbindung wird ein klassisches Annuitätendarlehen mit monatlicher Verzinsung und Zahlung gerechnet. Für die Anschlussfinanzierung wird die Restschuld mit dem gewählten Anschlusszins neu finanziert. Standardmäßig bleibt die heutige Monatsrate konstant und die erforderliche Tilgung wird daraus abgeleitet; alternativ kann sie separat gewählt werden. Sondertilgungen, Gebühren, laufende Hausnebenkosten, Instandhaltung, Steuern und Verkaufskosten sind nicht berücksichtigt.</p>
+        <p class="note">Während der Zinsbindung wird ein klassisches Annuitätendarlehen mit monatlicher Verzinsung und Zahlung gerechnet. Für die Anschlussfinanzierung wird die Restschuld mit dem gewählten Anschlusszins neu finanziert. Standardmäßig bleibt die heutige Monatsrate konstant und die erforderliche Tilgung wird daraus abgeleitet; alternativ kann sie separat gewählt werden. Sondertilgungen, Gebühren, laufende Hausnebenkosten, Instandhaltung, Steuern und Verkaufskosten sind nicht berücksichtigt (Instandhaltung und Verkaufskosten kommen im Tab „Kaufen oder Mieten“ hinzu).</p>
         <p class="note"><b>LTV:</b> Restschuld / modellierter Immobilienwert, rein deskriptiv. Einkommen, Liquidität, Objektqualität und bankinterner Beleihungswert fließen nicht ein.</p>
         <p class="note"><b>Refinanzierungsrisiko:</b> Der Anschlusszins ist eine Szenarioannahme, keine Prognose. Die 4,20 % Sollzins sind als realistische Mitte für Oktober 2026 gewählt, kein individuelles Angebot; tatsächliche Konditionen hängen von Beleihungsauslauf, Bonität, Objekt, Zinsbindung und Anbieter ab.</p>
+        <p class="note"><b>Kaufen oder Mieten:</b> Verglichen wird das Vermögen nach dem Betrachtungszeitraum: beim Kaufen Immobilienwert abzüglich Restschuld und Verkaufskosten, beim Mieten das angelegte Eigenkapital. Die monatliche Differenz zwischen Kosten und Miete legt jeweils der günstigere Weg zur Rendite der Alternativanlage an (Rendite nach Steuern, vereinfacht; keine Prognose). Die Miete steigt jährlich, standardmäßig mit der Wertsteigerung. Nicht berücksichtigt: Mietkaution, Leerstand, Umzugskosten, Steuereffekte und Betriebskosten, die bei beiden Wegen anfallen.</p>
         <p class="note"><b>Nebenkosten:</b> In Niedersachsen beträgt die Grunderwerbsteuer 5 %. Rund 2 % für Notar/Grundbuch plus ggf. Makler ergeben gerundet 10,5 %.</p>
       </details>
 
@@ -233,6 +299,14 @@ const CALC = [
   ['refiAmort', 'Tilgung nach Zinsbindung', 1, 6, 0.1, 2.5, pct, ''],
   ['appr', 'Immobilienwertsteigerung', -5, 6, 0.25, 2, pct, 'Nominale durchschnittliche Wertänderung p.a.; keine Prognose.'],
   ['years', 'Betrachtungszeitraum', 5, 30, 1, 20, jahre]
+];
+const mon = v => eur(v) + ' / Monat';
+const RENT = [
+  ['rent0', 'Vergleichsmiete (Kaltmiete, 1. Jahr)', 500, 8000, 50, 2200, mon, 'Miete für ein vergleichbares Objekt im ersten Jahr.'],
+  ['rentG', 'Mietsteigerung p.a.', -5, 6, 0.25, 2, pct, ''],
+  ['maint', 'Instandhaltung und nicht umlagefähige Kosten', 0, 3, 0.1, 1, pct, 'In % des Immobilienwerts p.a.; fällt nur beim Kaufen an.'],
+  ['invest', 'Rendite der Alternativanlage (nach Steuern)', 0, 8, 0.1, 4, pct, 'Für Eigenkapital und monatliche Differenzen. Steuern sind vereinfacht in der Nach-Steuer-Rendite enthalten.'],
+  ['sell', 'Verkaufskosten am Ende', 0, 8, 0.25, 0, pct, 'In % des Immobilienwerts; 0 % = Vergleich ohne Verkauf.']
 ];
 const MC = [
   ['nsim', 'Simulationen', 1000, 15000, 500, 5000, d0],
@@ -265,6 +339,9 @@ const tile = ([k, n, s = '']) => `<div class="tile"><div class="k">${k}</div><di
 
 controls('calcCtl', CALC);
 controls('mcCtl', MC);
+controls('brCtl', RENT);
+$('c-rentG').querySelector('.row').insertAdjacentHTML('afterend',
+  '<label class="check"><input id="rentOwn" type="checkbox"> Abweichend von der Wertsteigerung</label>');
 $('c-refiAmort').querySelector('.row').insertAdjacentHTML('afterend',
   '<label class="check"><input id="keep" type="checkbox" checked> Annuität wie heute beibehalten</label>');
 document.querySelectorAll('[data-legend]').forEach(el => {
@@ -499,6 +576,142 @@ function fan(canvas, series, { fmt, lo, hi, guides }) {
   guides.forEach(g => guide(p, g));
 }
 
+
+// ---- Buy vs. rent --------------------------------------------------------
+// Year-by-year wealth comparison with monthly cash flows. The cheaper way
+// invests the monthly difference; both start with the same equity.
+function buyRent(m, o) {
+  const im = Math.pow(1 + o.inv, 1 / 12) - 1;
+  let debt = m.loan, depBuy = 0, depRent = m.equity, rate = m.rate, pay = m.pay0;
+  const w0 = m.price * (1 - o.sell) - m.loan;
+  const rows = [{ year: 0, rentM: 0, costM: 0, interest: 0, principal: 0, maint: 0, rent: 0, value: m.price, debt: m.loan, wBuy: w0, wRent: m.equity, delta: w0 - m.equity }];
+  for (let y = 1; y <= m.years; y++) {
+    if (y === m.fixed + 1) {
+      rate = m.refiRate;
+      pay = m.keep ? m.pay0 : debt * (rate + m.refiAmort) / 12;
+    }
+    const rentM = o.rent0 * Math.pow(1 + o.gR, y - 1);
+    const maintM = o.maint * m.price * Math.pow(1 + o.g, y - 1) / 12;
+    let interest = 0, principal = 0;
+    for (let k = 0; k < 12; k++) {
+      const i = debt * rate / 12, t = Math.max(0, Math.min(pay, debt + i) - i);
+      debt = Math.max(0, debt - t);
+      interest += i; principal += t;
+      const diff = i + t + maintM - rentM;
+      depBuy *= 1 + im; depRent *= 1 + im;
+      if (diff > 0) depRent += diff; else depBuy -= diff;
+    }
+    const value = m.price * Math.pow(1 + o.g, y);
+    const wBuy = value * (1 - o.sell) - debt + depBuy;
+    rows.push({ year: y, rentM, costM: (interest + principal) / 12 + maintM, interest, principal, maint: maintM * 12, rent: rentM * 12, value, debt, wBuy, wRent: depRent, delta: wBuy - depRent });
+  }
+  return rows;
+}
+const finalDelta = (m, o) => buyRent(m, o).pop().delta;
+
+// Monthly rent at which buying and renting end with the same wealth.
+function breakEvenRent(m, o) {
+  const f = r => finalDelta(m, { ...o, rent0: r });
+  if (f(0) >= 0) return 0;
+  let lo = 0, hi = Math.max(1000, o.rent0 * 2);
+  for (let n = 0; f(hi) < 0 && n < 14; n++) hi *= 2;
+  if (f(hi) < 0) return null;
+  for (let n = 0; n < 50; n++) { const mid = (lo + hi) / 2; f(mid) < 0 ? lo = mid : hi = mid; }
+  return (lo + hi) / 2;
+}
+
+const signed = v => (v > 0 ? '+' : v < 0 ? '−' : '') + short(Math.abs(v));
+
+function rentCalc() {
+  const m = model(), v = id => +$(id).value, own = $('rentOwn').checked;
+  const o = { rent0: v('rent0'), g: m.appr, gR: own ? v('rentG') / 100 : m.appr, maint: v('maint') / 100, inv: v('invest') / 100, sell: v('sell') / 100 };
+  const rows = buyRent(m, o), T = m.years, end = rows[T], delta = end.delta;
+
+  show(RENT);
+  $('rentG').disabled = !own;
+  $('c-rentG').classList.toggle('off', !own);
+  $('o-rentG').textContent = pct(o.gR * 100);
+  $('h-rentG').textContent = own ? 'Abweichend von der Wertsteigerung gewählt.' : 'Gekoppelt an die Wertsteigerung aus dem Rechner.';
+  $('brLink').innerHTML = `<b>Aus dem Rechner:</b> Kaufpreis ${eur(m.price)} · Eigenkapital ${eur(m.equity)} · Darlehen ${eur(m.loan)} · Zinsbindung ${m.fixed} Jahre · Wertsteigerung ${pct(m.appr * 100)} · Zeitraum ${T} Jahre.`;
+
+  let be = null;
+  for (let y = T; y >= 1 && rows[y].delta >= 0; y--) be = y;
+  const beRent = breakEvenRent(m, o);
+  const even = Math.abs(delta) < 500;
+  const headline = even ? 'Kaufen und Mieten liegen gleichauf' : delta > 0 ? `Kaufen liegt um ${eur(delta)} vorn` : `Mieten liegt um ${eur(-delta)} vorn`;
+  $('brVerdict').innerHTML = `<h2>Ergebnis nach ${T} Jahren</h2><div class="big ${even ? '' : delta > 0 ? 'buy' : 'rent'}">${headline}</div>
+    <p class="note">${be ? `Kaufen liegt ab Jahr ${be} dauerhaft vorn.` : delta >= 0 ? 'Kaufen liegt über den gesamten Zeitraum vorn.' : `Innerhalb von ${T} Jahren holt Kaufen den Vorsprung des Mietens nicht auf.`}
+    ${beRent === null ? '' : beRent === 0 ? ' Kaufen ist selbst ohne Miete vorn.' : ` Kaufen lohnt sich ab einer Vergleichsmiete von ${eur(beRent)} pro Monat (aktuell ${eur(o.rent0)}).`}</p>`;
+
+  const c1 = rows[1];
+  $('brStats').innerHTML = [
+    ['Vermögen Kaufen', eur(end.wBuy), 'Immobilie − Restschuld' + (o.sell ? ' − Verkaufskosten' : '') + (end.wBuy - (end.value * (1 - o.sell) - end.debt) > 1 ? ' + Depot' : '')],
+    ['Vermögen Mieten', eur(end.wRent), 'Angelegtes Eigenkapital und Differenzen'],
+    ['Bruttomietrendite', pct(12 * o.rent0 / m.price * 100), 'Jahresmiete / Kaufpreis'],
+    ['Break-even-Miete', beRent === null ? '–' : eur(beRent), 'pro Monat, aktuell ' + eur(o.rent0)],
+    ['Belastung Jahr 1', eur(c1.costM), `Kaufen pro Monat; Miete ${eur(c1.rentM)}`]
+  ].map(tile).join('');
+
+  const tot = rows.slice(1).reduce((a, r) => ({ rent: a.rent + r.rent, int: a.int + r.interest, pri: a.pri + r.principal, mnt: a.mnt + r.maint }), { rent: 0, int: 0, pri: 0, mnt: 0 });
+  const fees = m.need - m.price, buyTotal = tot.int + tot.pri + tot.mnt + fees, scale = Math.max(tot.rent, buyTotal, 1);
+  const flowRow = (label, parts) => `<div><div class="lbl">${label}</div><div class="fbar">${parts.map(([c, , x]) => `<span style="background:var(${c});width:${x / scale * 100}%"></span>`).join('')}</div>
+    <div class="legend">${parts.map(([c, t, x]) => `<span><i style="background:var(${c})"></i>${t} ${eur(x)}</span>`).join('')}</div></div>`;
+  $('brFlow').innerHTML = flowRow('Mieten', [['--accent', 'Miete', tot.rent]]) +
+    flowRow('Kaufen', [['--c-int', 'Zinsen', tot.int], ['--c-warn', 'Instandhaltung', tot.mnt], ['--c-debt', 'Kaufnebenkosten', fees], ['--c-val', 'Tilgung (Vermögen)', tot.pri]]);
+
+  // sensitivity: property growth (columns) x return of the alternative (rows)
+  const gs = [-3, -2, -1, 0, 1, 2, 3].map(k => o.g + k / 100);
+  const i0 = Math.max(0, o.inv - 0.03), invs = [0, 1, 2, 3, 4, 5, 6].map(k => i0 + k / 100);
+  const grid = invs.map(ii => gs.map(gg => finalDelta(m, { ...o, g: gg, gR: own ? o.gR : gg, inv: ii })));
+  const mx = Math.max(...grid.flat().map(Math.abs), 1);
+  $('brHeat').innerHTML = `<thead><tr><th>Rendite Anlage ↓ · Wertsteigerung →</th>${gs.map(g => `<th>${pct(g * 100)}</th>`).join('')}</tr></thead><tbody>` +
+    invs.map((ii, r) => `<tr><th>${pct(ii * 100)}</th>${grid[r].map((x, c) => {
+      const a = Math.min(0.6, Math.abs(x) / mx * 0.6), bg = x >= 0 ? `rgba(5,150,105,${a})` : `rgba(14,165,233,${a})`;
+      return `<td class="${Math.abs(ii - o.inv) < 1e-9 && c === 3 ? 'cur' : ''}" style="background:${bg}">${signed(x)}</td>`;
+    }).join('')}</tr>`).join('') + '</tbody>';
+  $('brHeatNote').textContent = `Vorteil nach ${T} Jahren: + = Kaufen vorn (grün), − = Mieten vorn (blau). Umrandet ist Ihre Einstellung. ${own ? 'Die Mietsteigerung bleibt unverändert.' : 'Die Miete steigt jeweils mit der Wertsteigerung.'}`;
+
+  $('brRows').innerHTML = rows.map(r => `<tr><td>${r.year}</td><td>${r.year ? eur(r.rentM) : '–'}</td><td>${r.year ? eur(r.costM) : '–'}</td><td>${r.year ? eur(r.costM - r.rentM) : '–'}</td><td>${eur(r.value)}</td><td>${eur(r.debt)}</td><td>${eur(r.wBuy)}</td><td>${eur(r.wRent)}</td><td>${eur(r.delta)}</td></tr>`).join('');
+
+  view.br = () => {
+    const all = rows.flatMap(r => [r.wBuy, r.wRent]);
+    let p = plot($('brWealth'), { n: rows.length, lo: Math.min(0, ...all) * 1.1, hi: Math.max(...all) * 1.08, fmt: short });
+    fillBetween(p, rows.map(r => r.wBuy), rows.map(r => r.wRent));
+    lineSeries(p, rows.map(r => r.wRent), '--accent');
+    lineSeries(p, rows.map(r => r.wBuy), '--c-val');
+    guide(p, { i: m.fixed, label: 'Zinsbindung', color: '--c-warn' });
+    if (be) guide(p, { i: be, label: 'Break-even', color: '--muted' });
+    const yrs = rows.slice(1);
+    p = plot($('brMonthly'), { n: yrs.length, lo: 0, hi: Math.max(...yrs.map(r => Math.max(r.rentM, r.costM)), 1) * 1.1, fmt: v => d0(v) + ' €', x0: 1 });
+    lineSeries(p, yrs.map(r => r.rentM), '--accent');
+    lineSeries(p, yrs.map(r => r.costM), '--c-val');
+  };
+  redraw();
+}
+
+function lineSeries(p, ys, color) {
+  const x = p.x;
+  x.strokeStyle = css(color); x.lineWidth = 2.5; x.beginPath();
+  ys.forEach((v, i) => i ? x.lineTo(p.px(i), p.py(v)) : x.moveTo(p.px(i), p.py(v)));
+  x.stroke();
+}
+
+// Shades the gap between two series: green where a > b, blue where b > a.
+function fillBetween(p, a, b) {
+  const x = p.x, poly = (pts, d) => {
+    x.beginPath(); pts.forEach(([u, w], k) => k ? x.lineTo(u, w) : x.moveTo(u, w)); x.closePath();
+    x.fillStyle = css(d >= 0 ? '--c-val' : '--accent'); x.globalAlpha = 0.22; x.fill(); x.globalAlpha = 1;
+  };
+  for (let i = 0; i < a.length - 1; i++) {
+    const da = a[i] - b[i], db = a[i + 1] - b[i + 1];
+    const P = [[p.px(i), p.py(a[i])], [p.px(i + 1), p.py(a[i + 1])], [p.px(i + 1), p.py(b[i + 1])], [p.px(i), p.py(b[i])]];
+    if (da * db >= 0) { poly(P, da + db); continue; }
+    const t = da / (da - db), cx = p.px(i) + t * (p.px(i + 1) - p.px(i)), cy = p.py(a[i] + t * (a[i + 1] - a[i]));
+    poly([P[0], [cx, cy], P[3]], da);
+    poly([[cx, cy], P[1], P[2]], db);
+  }
+}
+
 // ---- Wiring ------------------------------------------------------------
 const view = {};
 let tab = 'calc';
@@ -509,12 +722,15 @@ document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click'
   document.querySelectorAll('.seg button').forEach(x => x.classList.toggle('on', x === b));
   $('calc').hidden = tab !== 'calc';
   $('mc').hidden = tab !== 'mc';
-  tab === 'mc' ? simulate() : calc();
+  $('br').hidden = tab !== 'br';
+  tab === 'mc' ? simulate() : tab === 'br' ? rentCalc() : calc();
 }));
 CALC.forEach(d => $(d[0]).addEventListener('input', calc));
 $('keep').addEventListener('change', calc);
 MC.forEach(d => $(d[0]).addEventListener('input', () => show(MC)));
 $('run').addEventListener('click', simulate);
+RENT.forEach(d => $(d[0]).addEventListener('input', rentCalc));
+$('rentOwn').addEventListener('change', rentCalc);
 window.addEventListener('resize', redraw);
 
 const toggle = $('darkToggle');
