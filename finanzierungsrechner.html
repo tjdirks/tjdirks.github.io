@@ -5,127 +5,115 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Immobilien-Finanzierungsrechner · Thomas Dirks</title>
   <meta name="description" content="Annuitätendarlehen, Anschlussfinanzierung, LTV und Monte-Carlo-Simulation für Immobilienfinanzierungen.">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2305080f'/%3E%3Ctext x='32' y='44' font-family='sans-serif' font-size='30' font-weight='700' text-anchor='middle' fill='%2338bdf8'%3ETD%3C/text%3E%3C/svg%3E">
-
-  <script>
-    (function () {
-      var dark = true;
-      try { dark = localStorage.getItem('dark-mode') !== 'false'; } catch (e) {}
-      if (dark) document.documentElement.classList.add('dark');
-    })();
-  </script>
-
-  <link rel="stylesheet" href="style.css?v=5">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f2ea">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#100f0c">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='4' fill='%2317160f'/%3E%3Ctext x='32' y='44' font-family='Georgia,serif' font-size='32' text-anchor='middle' fill='%23f5f2ea'%3ETD%3C/text%3E%3C/svg%3E">
+  <link rel="preload" href="fonts/newsreader-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="base.css?v=1">
   <style>
+    /* Chart series colours */
     :root {
-      --c-int: #dc2626;
-      --c-val: #059669;
-      --c-debt: #64748b;
-      --c-warn: #b45309;
-      --c-grid: rgba(11, 18, 32, 0.1);
+      --c-int: #b3261e;
+      --c-val: #2f6b4f;
+      --c-debt: #77736a;
+      --c-warn: #a8610a;
+      --c-blue: #2c5d8a;
+      --c-grid: rgb(23 22 15 / 0.1);
+
+      @media (prefers-color-scheme: dark) {
+        --c-int: #ef8a80;
+        --c-val: #7fc8a0;
+        --c-debt: #a39e90;
+        --c-warn: #e2b04a;
+        --c-blue: #86b7e6;
+        --c-grid: rgb(236 232 220 / 0.12);
+      }
     }
 
-    :root.dark {
-      --c-int: #f87171;
-      --c-val: #34d399;
-      --c-debt: #94a3b8;
-      --c-warn: #fbbf24;
-      --c-grid: rgba(255, 255, 255, 0.1);
-    }
+    .wrap { max-width: 80rem; margin: 0 auto; padding: clamp(1rem, 4vw, 3rem); padding-bottom: max(2rem, env(safe-area-inset-bottom, 0px)); }
+    .bar { margin-bottom: clamp(1.5rem, 5vw, 3rem); font-size: 0.875rem; color: var(--muted); }
+    h1 { margin: 0; font-family: var(--serif); font-weight: 400; font-variation-settings: "opsz" 72; font-size: clamp(2.25rem, 1.4rem + 3.6vw, 4.5rem); line-height: 1; letter-spacing: -0.03em; overflow-wrap: break-word; hyphens: auto; }
+    h2 { margin: 0 0 1rem; font-family: var(--serif); font-weight: 400; font-size: 1.375rem; line-height: 1.2; letter-spacing: -0.01em; }
+    .lead { max-width: 62ch; margin: 1rem 0 2rem; color: var(--muted); text-wrap: pretty; }
 
-    .page { grid-template-columns: minmax(0, 1fr); place-items: start center; padding: 1.5rem 1.5rem 3rem; }
-    .wrap { width: min(1240px, 100%); }
-    .bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; }
-    .back { color: var(--muted); text-decoration: none; font-size: 0.9rem; }
-    .back:hover { color: var(--text); }
-    h1 { font-size: clamp(1.9rem, 5vw, 3rem); margin: 0; }
-    h2 { margin: 0 0 1rem; font-size: 1.05rem; }
-    .lead { max-width: 62ch; margin: 0.75rem 0 1.75rem; color: var(--muted); line-height: 1.55; }
-
-    .seg { display: inline-flex; gap: 4px; padding: 4px; margin-bottom: 1.5rem; border-radius: 999px; border: 1px solid var(--line); background: var(--glass); }
-    .seg button { font: inherit; font-weight: 600; padding: 0.55rem 1.2rem; border: 0; border-radius: 999px; background: none; color: var(--muted); cursor: pointer; }
+    /* Tabs: text with an ink underline on the active one */
+    .seg { display: flex; flex-wrap: wrap; gap: 0 1.75rem; margin-bottom: 2.5rem; border-bottom: 1px solid var(--rule); }
+    .seg button { margin-bottom: -1px; padding: 0.75rem 0; border: 0; border-bottom: 1px solid transparent; background: none; color: var(--muted); font: 500 1rem/1.2 var(--sans); cursor: pointer; }
     .seg .short { display: none; }
-    .seg button.on { color: #04101c; background: linear-gradient(135deg, #7dd3fc, #a5b4fc); }
+    .seg button.on { color: var(--ink); border-bottom-color: var(--ink); }
+    @media (hover: hover) and (pointer: fine) { .seg button:hover { color: var(--ink); } }
 
-    .grid { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 1.25rem; align-items: start; }
-    .col { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.25rem; }
-    .panel { padding: 1.4rem; border-radius: 24px; border: 1px solid var(--line); background: var(--glass-strong); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
+    .grid { display: grid; grid-template-columns: 21rem minmax(0, 1fr); gap: 2.5rem clamp(2rem, 4vw, 3.5rem); align-items: start; }
+    .col { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2.5rem; }
+    .panel { min-width: 0; padding-top: 1.1rem; border-top: 1px solid var(--ink); }
 
     .ctl { margin-bottom: 1.4rem; }
-    .row { display: flex; justify-content: space-between; gap: 0.75rem; }
-    .v { color: var(--accent-text); font-variant-numeric: tabular-nums; white-space: nowrap; }
-    input[type=range] { width: 100%; margin: 0.6rem 0 0.1rem; accent-color: var(--accent); }
-    .rng { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--muted); }
-    .hint, .note { font-size: 0.85rem; line-height: 1.55; color: var(--muted); }
+    .row { display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem; }
+    .v { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    input[type=range] { width: 100%; margin: 0.6rem 0 0.1rem; accent-color: var(--ink); touch-action: pan-y; }
+    .rng { display: flex; justify-content: space-between; font-size: 0.8125rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+    .hint, .note { font-size: 0.875rem; color: var(--muted); }
     .hint { margin-top: 0.4rem; }
-    .note { margin: 1rem 0 0; }
-    .note b, summary { color: var(--text); }
+    .note { margin: 1rem 0 0; text-wrap: pretty; }
+    .note b, summary { color: var(--ink); }
     .check { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; font-size: 0.9rem; }
+    .check input { accent-color: var(--ink); }
     .off input, .off .rng, .off .hint { opacity: 0.5; }
 
-    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr)); gap: 0.75rem; }
-    .tile { padding: 0.9rem 1rem; border-radius: 18px; border: 1px solid var(--line); background: var(--glass); }
-    .tile .k, .tile .s { font-size: 0.85rem; line-height: 1.4; color: var(--muted); }
-    .tile .n { margin: 0.25rem 0; font-size: 1.4rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+    /* Figures: label, serif number, footnote between hairlines */
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(10rem, 100%), 1fr)); gap: 0 1.5rem; }
+    .tile { min-width: 0; padding: 0.8rem 0 1.1rem; border-top: 1px solid var(--rule); }
+    .col > .stats .tile { border-top-color: var(--ink); }
+    .tile .k, .tile .s { font-size: 0.8125rem; line-height: 1.4; color: var(--muted); }
+    .tile .n { margin: 0.2rem 0; font-family: var(--serif); font-size: 1.75rem; line-height: 1.15; font-variant-numeric: lining-nums tabular-nums; overflow-wrap: anywhere; }
 
-    .warn { margin-top: 1rem; padding: 0.8rem 1rem; border-radius: 14px; border: 1px solid var(--c-warn); font-size: 0.9rem; line-height: 1.5; }
-    
-    .charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr)); gap: 1.25rem; }
+    .warn { margin-top: 1rem; padding: 0.1rem 0 0.1rem 1rem; border-left: 2px solid var(--c-warn); font-size: 0.9rem; }
+
+    .charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(21rem, 100%), 1fr)); gap: 2.5rem 2rem; }
     canvas { display: block; width: 100%; height: 320px; }
-    .legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1.1rem; margin-top: 0.75rem; font-size: 0.85rem; color: var(--muted); }
-    .legend i { display: inline-block; width: 10px; height: 10px; margin-right: 0.4rem; border-radius: 3px; }
+    .legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1.1rem; margin-top: 0.75rem; font-size: 0.8125rem; color: var(--muted); }
+    .legend i { display: inline-block; width: 10px; height: 10px; margin-right: 0.4rem; }
 
-    .tbl { overflow: auto; max-height: 480px; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
-    th, td { padding: 0.55rem 0.7rem; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--line); }
-    th:first-child, td:first-child { text-align: left; }
-    th { position: sticky; top: 0; background: var(--bg); color: var(--muted); font-weight: 600; }
+    .tbl { overflow: auto; max-height: 30rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; font-variant-numeric: tabular-nums; }
+    th, td { padding: 0.55rem 0.7rem; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--rule); }
+    th:first-child, td:first-child { text-align: left; padding-left: 0; }
+    th { position: sticky; top: 0; background: var(--paper); color: var(--muted); font-weight: 500; }
 
-    .cta { margin-top: 0.5rem; border: 0; cursor: pointer; font: inherit; }
-    details.panel p { margin: 0.75rem 0 0; }
-    summary { cursor: pointer; font-weight: 600; }
+    .cta { margin-top: 0.5rem; }
+    details.panel { margin-top: 2.5rem; }
+    details.panel p { margin: 0.75rem 0 0; max-width: 80ch; }
+    summary { cursor: pointer; font-weight: 500; }
 
-    .verdict .big { margin: 0.25rem 0 0.5rem; font-size: clamp(1.4rem, 3.6vw, 2rem); font-weight: 700; letter-spacing: -0.01em; }
+    .verdict .big { margin: 0.25rem 0 0.5rem; font-family: var(--serif); font-size: clamp(1.75rem, 1.2rem + 2vw, 2.75rem); line-height: 1.1; letter-spacing: -0.02em; font-variant-numeric: lining-nums; }
     .verdict .big.buy { color: var(--c-val); }
-    .verdict .big.rent { color: var(--accent-text); }
+    .verdict .big.rent { color: var(--c-blue); }
     .verdict .note { margin: 0; }
     .flow { display: grid; gap: 1.1rem; }
-    .flow .lbl { margin-bottom: 0.35rem; font-size: 0.9rem; font-weight: 600; }
-    .flow .fbar { display: flex; height: 2rem; overflow: hidden; border-radius: 10px; border: 1px solid var(--line); }
+    .flow .lbl { margin-bottom: 0.35rem; font-size: 0.9rem; font-weight: 500; }
+    .flow .fbar { display: flex; height: 2rem; overflow: hidden; }
     .flow .fbar span { min-width: 2px; }
     .flow .legend { margin-top: 0.5rem; }
-    .heat th, .heat td { text-align: center; }
-    .heat th:first-child { text-align: left; white-space: normal; min-width: 9rem; }
-    .heat td.cur { box-shadow: inset 0 0 0 2px var(--accent-text); }
-    @media (max-width: 960px) { .grid { grid-template-columns: minmax(0, 1fr); } }
-    @media (max-width: 520px) { .page { padding: 1rem 0.75rem 2rem; } .seg { display: flex; } .seg button { flex: 1; padding: 0.55rem 0.25rem; font-size: 0.85rem; white-space: nowrap; } .seg .long { display: none; } .seg .short { display: inline; } .panel { padding: 1.1rem; } canvas { height: 260px; } }
+    .heat th, .heat td { text-align: center; padding-left: 0.7rem; }
+    .heat th:first-child { text-align: left; padding-left: 0; white-space: normal; min-width: 9rem; }
+    .heat td.cur { box-shadow: inset 0 0 0 2px var(--ink); }
+    footer { margin-top: 2.5rem; }
+    @media (max-width: 60rem) { .grid { grid-template-columns: minmax(0, 1fr); } }
+    @media (max-width: 32.5rem) { .seg { gap: 0; justify-content: space-between; } .seg button { font-size: 0.9375rem; white-space: nowrap; } .seg .long { display: none; } .seg .short { display: inline; } canvas { height: 260px; } }
   </style>
 </head>
 <body>
-  <div class="backdrop" aria-hidden="true">
-    <span class="orb"></span><span class="orb"></span><span class="orb"></span>
-  </div>
-
-  <div class="page">
-    <div class="wrap">
-      <div class="bar">
-        <a class="back" href="./">← Back</a>
-        <label class="pill">
-          <span>Dark</span>
-          <span class="toggle">
-            <input type="checkbox" id="darkToggle" role="switch">
-            <span class="slider"></span>
-          </span>
-        </label>
-      </div>
+  <div class="wrap">
+      <div class="bar"><a class="text-link" href="./"><span aria-hidden="true">←</span> Thomas Dirks</a></div>
 
       <h1>Immobilien-Finanzierungsrechner</h1>
       <p class="lead">Annuitätendarlehen mit monatlicher Tilgung, Immobilienwertentwicklung, LTV und Anschlussfinanzierung.</p>
 
       <div class="seg" role="tablist">
-        <button class="on" data-tab="calc" role="tab"><span class="long">Finanzierungsrechner</span><span class="short">Rechner</span></button>
-        <button data-tab="mc" role="tab"><span class="long">Monte-Carlo-Simulation</span><span class="short">Monte-Carlo</span></button>
-        <button data-tab="br" role="tab"><span class="long">Kaufen oder Mieten</span><span class="short">Kaufen/Mieten</span></button>
+        <button type="button" class="on" data-tab="calc" role="tab" aria-selected="true" aria-controls="calc"><span class="long">Finanzierungsrechner</span><span class="short">Rechner</span></button>
+        <button type="button" data-tab="mc" role="tab" aria-selected="false" aria-controls="mc"><span class="long">Monte-Carlo-Simulation</span><span class="short">Monte-Carlo</span></button>
+        <button type="button" data-tab="br" role="tab" aria-selected="false" aria-controls="br"><span class="long">Kaufen oder Mieten</span><span class="short">Kaufen/Mieten</span></button>
       </div>
 
       <section id="calc" class="grid">
@@ -148,7 +136,7 @@
             <div class="panel">
               <h2>Jährlicher Schuldendienst</h2>
               <canvas id="cash" role="img" aria-label="Jährlicher Schuldendienst nach Zinsen und Tilgung"></canvas>
-              <div class="legend" data-legend="--c-int:Zinsen,--accent:Tilgung"></div>
+              <div class="legend" data-legend="--c-int:Zinsen,--c-blue:Tilgung"></div>
             </div>
             <div class="panel">
               <h2>Restschuld vs. Immobilienwert</h2>
@@ -176,7 +164,7 @@
           <h2>Simulationsannahmen</h2>
           <p class="note" style="margin:0 0 1.4rem" id="mcLink"></p>
           <div id="mcCtl"></div>
-          <button class="btn primary cta" id="run">Neu simulieren</button>
+          <button type="button" class="btn cta" id="run">Neu simulieren</button>
           <p class="note">Immobilienwerte folgen einer lognormalen Renditesimulation, der Anschlusszins einem mean-reverting Prozess. Der Zins am Ende der Zinsbindung gilt als Anschlusszins für die Restlaufzeit. Die Tilgung danach folgt den Einstellungen des Rechners, inklusive „Annuität wie heute beibehalten“.</p>
         </div>
 
@@ -228,7 +216,7 @@
           <div class="panel">
             <h2>Vermögensentwicklung</h2>
             <canvas id="brWealth" role="img" aria-label="Vermögen beim Kaufen und beim Mieten nach Jahren"></canvas>
-            <div class="legend" data-legend="--c-val:Vermögen Kaufen,--accent:Vermögen Mieten"></div>
+            <div class="legend" data-legend="--c-val:Vermögen Kaufen,--c-blue:Vermögen Mieten"></div>
             <p class="note">Die Fläche zeigt den Vorsprung: grün, wenn Kaufen vorn liegt, blau, wenn Mieten vorn liegt.</p>
           </div>
 
@@ -236,7 +224,7 @@
             <div class="panel">
               <h2>Monatliche Belastung</h2>
               <canvas id="brMonthly" role="img" aria-label="Monatliche Kosten beim Kaufen und die Miete nach Jahren"></canvas>
-              <div class="legend" data-legend="--c-val:Kaufen (Rate + Instandhaltung),--accent:Miete"></div>
+              <div class="legend" data-legend="--c-val:Kaufen (Rate + Instandhaltung),--c-blue:Miete"></div>
             </div>
             <div class="panel">
               <h2>Wohin geht das Geld?</h2>
@@ -264,7 +252,7 @@
         </div>
       </section>
 
-      <details class="panel" style="margin-top:1.25rem">
+      <details class="panel">
         <summary>Modellhinweise</summary>
         <p class="note">Während der Zinsbindung wird ein klassisches Annuitätendarlehen mit monatlicher Verzinsung und Zahlung gerechnet. Für die Anschlussfinanzierung wird die Restschuld mit dem gewählten Anschlusszins neu finanziert. Standardmäßig bleibt die heutige Monatsrate konstant und die erforderliche Tilgung wird daraus abgeleitet; alternativ kann sie separat gewählt werden. Sondertilgungen, Gebühren, laufende Hausnebenkosten, Instandhaltung, Steuern und Verkaufskosten sind nicht berücksichtigt (Instandhaltung und Verkaufskosten kommen im Tab „Kaufen oder Mieten“ hinzu).</p>
         <p class="note"><b>LTV:</b> Restschuld / modellierter Immobilienwert, rein deskriptiv. Einkommen, Liquidität, Objektqualität und bankinterner Beleihungswert fließen nicht ein.</p>
@@ -273,8 +261,7 @@
         <p class="note"><b>Nebenkosten:</b> In Niedersachsen beträgt die Grunderwerbsteuer 5 %. Rund 2 % für Notar/Grundbuch plus ggf. Makler ergeben gerundet 10,5 %.</p>
       </details>
 
-      <footer class="foot"><a href="./#imprint">Imprint</a></footer>
-    </div>
+      <footer><a class="text-link" href="./#imprint">Imprint</a></footer>
   </div>
 
 <script>
@@ -433,7 +420,7 @@ function calc() {
     sv.forEach((d, k) => {
       const w = p.bw * 0.7, x = p.px(k) - w / 2, yi = p.py(d.i), yt = p.py(d.i + d.t);
       p.x.fillStyle = css('--c-int'); p.x.fillRect(x, yi, w, p.base - yi);
-      p.x.fillStyle = css('--accent'); p.x.fillRect(x, yt, w, yi - yt);
+      p.x.fillStyle = css('--c-blue'); p.x.fillRect(x, yt, w, yi - yt);
     });
     p = plot($('ltv'), { n: rows.length, bars: true, hi: Math.max(...rows.map(d => Math.max(d.debt, d.value)), 1) * 1.12, fmt: short });
     rows.forEach((d, k) => {
@@ -548,7 +535,9 @@ function guide(p, { i, v, label, color = '--muted' }) {
     if (i <= 0 || i >= p.n) return x.restore();
     const X = p.px(i);
     x.moveTo(X, p.T); x.lineTo(X, p.base); x.stroke();
-    x.textAlign = 'center'; x.fillText(label, X, p.T + 12);
+    // Keep the label inside the plot when the line is near an edge
+    const half = x.measureText(label).width / 2 + 2;
+    x.textAlign = 'center'; x.fillText(label, Math.max(p.L + half, Math.min(p.L + p.cw - half, X)), p.T + 12);
   } else {
     if (v < p.lo || v > p.hi) return x.restore();
     const Y = p.py(v);
@@ -656,7 +645,7 @@ function rentCalc() {
   const fees = m.need - m.price, buyTotal = tot.int + tot.pri + tot.mnt + fees, scale = Math.max(tot.rent, buyTotal, 1);
   const flowRow = (label, parts) => `<div><div class="lbl">${label}</div><div class="fbar">${parts.map(([c, , x]) => `<span style="background:var(${c});width:${x / scale * 100}%"></span>`).join('')}</div>
     <div class="legend">${parts.map(([c, t, x]) => `<span><i style="background:var(${c})"></i>${t} ${eur(x)}</span>`).join('')}</div></div>`;
-  $('brFlow').innerHTML = flowRow('Mieten', [['--accent', 'Miete', tot.rent]]) +
+  $('brFlow').innerHTML = flowRow('Mieten', [['--c-blue', 'Miete', tot.rent]]) +
     flowRow('Kaufen', [['--c-int', 'Zinsen', tot.int], ['--c-warn', 'Instandhaltung', tot.mnt], ['--c-debt', 'Kaufnebenkosten', fees], ['--c-val', 'Tilgung (Vermögen)', tot.pri]]);
 
   // sensitivity: property growth (columns) x return of the alternative (rows)
@@ -666,7 +655,7 @@ function rentCalc() {
   const mx = Math.max(...grid.flat().map(Math.abs), 1);
   $('brHeat').innerHTML = `<thead><tr><th>Rendite Anlage ↓ · Wertsteigerung →</th>${gs.map(g => `<th>${pct(g * 100)}</th>`).join('')}</tr></thead><tbody>` +
     invs.map((ii, r) => `<tr><th>${pct(ii * 100)}</th>${grid[r].map((x, c) => {
-      const a = Math.min(0.6, Math.abs(x) / mx * 0.6), bg = x >= 0 ? `rgba(5,150,105,${a})` : `rgba(14,165,233,${a})`;
+      const a = Math.min(0.6, Math.abs(x) / mx * 0.6), bg = `color-mix(in srgb, var(${x >= 0 ? '--c-val' : '--c-blue'}) ${Math.round(a * 100)}%, transparent)`;
       return `<td class="${Math.abs(ii - o.inv) < 1e-9 && c === 3 ? 'cur' : ''}" style="background:${bg}">${signed(x)}</td>`;
     }).join('')}</tr>`).join('') + '</tbody>';
   $('brHeatNote').textContent = `Vorteil nach ${T} Jahren: + = Kaufen vorn (grün), − = Mieten vorn (blau). Umrandet ist Ihre Einstellung. ${own ? 'Die Mietsteigerung bleibt unverändert.' : 'Die Miete steigt jeweils mit der Wertsteigerung.'}`;
@@ -677,13 +666,13 @@ function rentCalc() {
     const all = rows.flatMap(r => [r.wBuy, r.wRent]);
     let p = plot($('brWealth'), { n: rows.length, lo: Math.min(0, ...all) * 1.1, hi: Math.max(...all) * 1.08, fmt: short });
     fillBetween(p, rows.map(r => r.wBuy), rows.map(r => r.wRent));
-    lineSeries(p, rows.map(r => r.wRent), '--accent');
+    lineSeries(p, rows.map(r => r.wRent), '--c-blue');
     lineSeries(p, rows.map(r => r.wBuy), '--c-val');
     guide(p, { i: m.fixed, label: 'Zinsbindung', color: '--c-warn' });
     if (be) guide(p, { i: be, label: 'Break-even', color: '--muted' });
     const yrs = rows.slice(1);
     p = plot($('brMonthly'), { n: yrs.length, lo: 0, hi: Math.max(...yrs.map(r => Math.max(r.rentM, r.costM)), 1) * 1.1, fmt: v => d0(v) + ' €', x0: 1 });
-    lineSeries(p, yrs.map(r => r.rentM), '--accent');
+    lineSeries(p, yrs.map(r => r.rentM), '--c-blue');
     lineSeries(p, yrs.map(r => r.costM), '--c-val');
   };
   redraw();
@@ -700,7 +689,7 @@ function lineSeries(p, ys, color) {
 function fillBetween(p, a, b) {
   const x = p.x, poly = (pts, d) => {
     x.beginPath(); pts.forEach(([u, w], k) => k ? x.lineTo(u, w) : x.moveTo(u, w)); x.closePath();
-    x.fillStyle = css(d >= 0 ? '--c-val' : '--accent'); x.globalAlpha = 0.22; x.fill(); x.globalAlpha = 1;
+    x.fillStyle = css(d >= 0 ? '--c-val' : '--c-blue'); x.globalAlpha = 0.22; x.fill(); x.globalAlpha = 1;
   };
   for (let i = 0; i < a.length - 1; i++) {
     const da = a[i] - b[i], db = a[i + 1] - b[i + 1];
@@ -719,7 +708,7 @@ const redraw = () => view[tab] && view[tab]();
 
 document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => {
   tab = b.dataset.tab;
-  document.querySelectorAll('.seg button').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('.seg button').forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-selected', x === b); });
   $('calc').hidden = tab !== 'calc';
   $('mc').hidden = tab !== 'mc';
   $('br').hidden = tab !== 'br';
@@ -733,13 +722,8 @@ RENT.forEach(d => $(d[0]).addEventListener('input', rentCalc));
 $('rentOwn').addEventListener('change', rentCalc);
 window.addEventListener('resize', redraw);
 
-const toggle = $('darkToggle');
-toggle.checked = document.documentElement.classList.contains('dark');
-toggle.addEventListener('change', () => {
-  document.documentElement.classList.toggle('dark', toggle.checked);
-  try { localStorage.setItem('dark-mode', toggle.checked); } catch (e) {}
-  redraw();
-});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redraw);
+document.fonts?.ready.then(redraw);
 
 calc();
 </script>
