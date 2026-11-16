@@ -106,6 +106,13 @@
       "skillPath": "skills/mobile-native/SKILL.md",
       "computedHash": "2f55a258f185314d585cb6a3514a66c15e9cfc8cd45c936284c4fb7374603d7e"
     },
+    "modern-web-guidance": {
+      "source": "GoogleChrome/modern-web-guidance",
+      "commit": "4dd968349e54ca45a05dd5c818fb035c9054b022",
+      "sourceType": "github",
+      "skillPath": "skills/modern-web-guidance/SKILL.md",
+      "computedHash": "9e69ce00dc314b64f6664031b70295ea46c7de93ac682c624808df6e48e08b66"
+    },
     "pick-ui-library": {
       "source": "emilkowalski/skills",
       "commit": "64eb3deb9a5fbfa041faf783e0bc3fd635872e9c",
