@@ -2,97 +2,67 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
   <title>Thomas Dirks</title>
   <meta name="description" content="Thomas Dirks – M&A and Corporate Finance.">
-  <meta name="theme-color" content="#05080f">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f2ea">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#100f0c">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Thomas Dirks">
   <meta property="og:description" content="M&A · Corporate Finance">
   <meta property="og:url" content="https://t-dirks.de/">
   <meta name="twitter:card" content="summary">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2305080f'/%3E%3Ctext x='32' y='44' font-family='sans-serif' font-size='30' font-weight='700' text-anchor='middle' fill='%2338bdf8'%3ETD%3C/text%3E%3C/svg%3E">
-
-  <script>
-    // Dark is the default; only an explicit "light" choice is remembered.
-    (function () {
-      var dark = true;
-      try { dark = localStorage.getItem('dark-mode') !== 'false'; } catch (e) {}
-      if (dark) document.documentElement.classList.add('dark');
-      // SVG filters inside backdrop-filter only work in Chromium; others get a plain blur.
-      var b = navigator.userAgentData && navigator.userAgentData.brands;
-      if (b && b.some(function (x) { return /Chromium/.test(x.brand); })) {
-        document.documentElement.classList.add('lg');
-      }
-    })();
-  </script>
-
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='4' fill='%2317160f'/%3E%3Ctext x='32' y='44' font-family='Georgia,serif' font-size='32' text-anchor='middle' fill='%23f5f2ea'%3ETD%3C/text%3E%3C/svg%3E">
+  <link rel="preload" href="fonts/newsreader-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="home.css?v=1">
 </head>
 <body>
-  <!-- Refraction filter used by the .glass backdrop (Chromium) -->
-  <svg width="0" height="0" aria-hidden="true" style="position:absolute">
-    <filter id="lg" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
-      <feTurbulence type="fractalNoise" baseFrequency="0.008 0.012" numOctaves="2" seed="7" result="n"/>
-      <feGaussianBlur in="n" stdDeviation="2" result="nb"/>
-      <feDisplacementMap in="SourceGraphic" in2="nb" scale="40" xChannelSelector="R" yChannelSelector="G"/>
-    </filter>
-  </svg>
-
-  <div class="backdrop" aria-hidden="true">
-    <span class="orb"></span><span class="orb"></span><span class="orb"></span>
-  </div>
-
   <div class="page">
-    <main class="card glass">
-      <div class="top">
-        <label class="pill">
-          <span>Dark</span>
-          <span class="toggle">
-            <input type="checkbox" id="darkToggle" role="switch">
-            <span class="slider"></span>
-          </span>
-        </label>
-      </div>
+    <main>
+      <h1><span>Thomas</span> <span>Dirks</span></h1>
 
-      <h1>Thomas Dirks</h1>
-      <div class="chips"><span class="chip">M&amp;A</span><span class="chip">Corporate Finance</span><span class="chip">MSc Finance</span></div>
+      <dl class="facts">
+        <div><dt>Focus</dt><dd>Mergers &amp; Acquisitions</dd></div>
+        <div><dt>Practice</dt><dd>Corporate Finance</dd></div>
+        <div><dt>Education</dt><dd>MSc Finance</dd></div>
+      </dl>
 
       <nav class="links" aria-label="Links">
-        <a class="btn primary" href="https://www.linkedin.com/in/tjdirks" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-        <a class="btn" id="emailLink" href="#" data-user="thomas" data-domain="t-dirks.de">Contact</a>
+        <a class="btn" href="https://www.linkedin.com/in/tjdirks" target="_blank" rel="noopener noreferrer">LinkedIn <span class="arrow" aria-hidden="true">↗</span></a>
+        <a class="text-link" id="emailLink" href="#" data-user="thomas" data-domain="t-dirks.de">Contact</a>
       </nav>
-
-      <section class="emergency" aria-label="Emergency information">
-        <button type="button" class="reveal" id="revealButton" aria-expanded="false" aria-controls="unlockSection">🔒 Emergency</button>
-
-        <div id="unlockSection" hidden>
-          <form class="unlock-row" id="unlockForm">
-            <input type="password" id="emergencyPass" placeholder="Enter passcode" aria-label="Passcode" autocomplete="off">
-            <button type="submit" class="btn primary">Unlock</button>
-          </form>
-          <p class="error" id="emergencyError" role="alert" hidden>Invalid passcode.</p>
-          <div id="emergencyResult" hidden>
-            <pre id="emergencyInfo"></pre>
-            <button type="button" class="reveal" id="hideButton">Hide</button>
-          </div>
-        </div>
-      </section>
     </main>
-    <footer class="foot"><a href="#imprint">Imprint</a></footer>
 
-    <dialog id="imprint" aria-labelledby="imprintTitle">
-      <div class="sheet">
-        <button type="button" class="close" id="imprintClose" aria-label="Close">×</button>
-        <h2 id="imprintTitle">Imprint</h2>
-        <h3>Angaben gemäß § 5 DDG</h3>
-        <p id="imprintAddr"></p>
-        <h3>Contact</h3>
-        <p><a id="imprintMail" href="#" data-user="thomas" data-domain="t-dirks.de"></a></p>
-        <a class="tools" href="finanzierungsrechner.html">Tools</a>
-      </div>
-    </dialog>
+    <footer>
+      <a class="text-link" href="#imprint">Imprint</a>
+      <button type="button" class="text-link" id="emergencyOpen" aria-haspopup="dialog">Emergency information</button>
+    </footer>
   </div>
+
+  <dialog id="imprint" closedby="any" aria-labelledby="imprintTitle">
+    <button type="button" class="close" data-close aria-label="Close">×</button>
+    <h2 id="imprintTitle">Imprint</h2>
+    <h3 class="label">Angaben gemäß § 5 DDG</h3>
+    <p id="imprintAddr"></p>
+    <h3 class="label">Contact</h3>
+    <p><a class="text-link" id="imprintMail" href="#" data-user="thomas" data-domain="t-dirks.de"></a></p>
+    <a class="text-link tools" href="finanzierungsrechner.html">Tools</a>
+  </dialog>
+
+  <dialog id="emergency" closedby="any" aria-labelledby="emergencyTitle">
+    <button type="button" class="close" data-close aria-label="Close">×</button>
+    <h2 id="emergencyTitle">Emergency</h2>
+    <form class="unlock" id="unlockForm">
+      <input type="password" id="emergencyPass" placeholder="Passcode" aria-label="Passcode" autocomplete="off" autocapitalize="none" enterkeyhint="done">
+      <button type="submit" class="btn" id="unlockButton">Unlock</button>
+    </form>
+    <p class="error" id="emergencyError" role="alert" hidden>Invalid passcode.</p>
+    <div class="result" id="emergencyResult" hidden>
+      <pre id="emergencyInfo"></pre>
+      <button type="button" class="text-link" id="hideButton">Hide</button>
+    </div>
+  </dialog>
 
   <script>
     const $ = (id) => document.getElementById(id);
@@ -101,12 +71,59 @@
     const emailLink = $('emailLink');
     emailLink.href = `mailto:${emailLink.dataset.user}@${emailLink.dataset.domain}`;
 
-    // Imprint overlay: the address is stored encoded and only written into the page when opened
+    // Dialog closing. Browsers that cannot transition out of the top layer
+    // get the exit animation through [data-closing] before close() runs.
+    let displayTransition;
+    function canTransitionDisplay() {
+      if (displayTransition !== undefined) return displayTransition;
+      if (!window.CSS?.supports?.('transition-behavior', 'allow-discrete')) return false;
+      const probe = document.createElement('div');
+      probe.style.cssText = 'transition: display 1s allow-discrete !important; display: block;';
+      document.body.appendChild(probe);
+      getComputedStyle(probe).display;
+      probe.style.display = 'none';
+      displayTransition = getComputedStyle(probe).display === 'block';
+      probe.remove();
+      return displayTransition;
+    }
+
+    async function closeDialog(dialog) {
+      if (!dialog.open) return;
+      if (!(window.CSS?.supports?.('overlay', 'auto') && canTransitionDisplay())) {
+        dialog.setAttribute('data-closing', '');
+        const animations = dialog.getAnimations({ subtree: true });
+        if (animations.length) {
+          await Promise.race([
+            Promise.allSettled(animations.map((a) => a.finished)),
+            new Promise((r) => setTimeout(r, 1000)),
+          ]);
+        }
+        if (!dialog.hasAttribute('data-closing')) return;
+        dialog.removeAttribute('data-closing');
+      }
+      dialog.close();
+    }
+
+    document.querySelectorAll('dialog').forEach((dialog) => {
+      dialog.addEventListener('cancel', (e) => { e.preventDefault(); closeDialog(dialog); });
+      dialog.querySelector('[data-close]').addEventListener('click', () => closeDialog(dialog));
+      // Backdrop click for browsers without closedby
+      if (!('closedBy' in HTMLDialogElement.prototype)) {
+        dialog.addEventListener('click', (e) => {
+          if (e.target !== dialog) return;
+          const r = dialog.getBoundingClientRect();
+          const inside = r.top <= e.clientY && e.clientY <= r.bottom && r.left <= e.clientX && e.clientX <= r.right;
+          if (!inside) closeDialog(dialog);
+        });
+      }
+    });
+
+    // Imprint: the address is stored encoded and only written into the page when opened
     const imprint = $('imprint');
     const addr = "VGhvbWFzIERpcmtzCkxpbGxpLUZyaWVkZW1hbm4tUmluZyAyNAozMDE3NyBIYW5ub3ZlcgpHZXJtYW55";
     const mail = $('imprintMail');
     function syncImprint() {
-      if (location.hash !== '#imprint') return imprint.open && imprint.close();
+      if (location.hash !== '#imprint') return closeDialog(imprint);
       if (imprint.open) return;
       if (!$('imprintAddr').textContent) {
         $('imprintAddr').textContent = new TextDecoder().decode(Uint8Array.from(atob(addr), (ch) => ch.charCodeAt(0)));
@@ -118,35 +135,27 @@
     imprint.addEventListener('close', () => {
       if (location.hash === '#imprint') history.replaceState(null, '', location.pathname + location.search);
     });
-    imprint.addEventListener('click', (e) => { if (e.target === imprint) imprint.close(); });
-    $('imprintClose').addEventListener('click', () => imprint.close());
     window.addEventListener('hashchange', syncImprint);
     syncImprint();
 
-    // Dark mode (initial state is set by the inline script in <head>)
-    const root = document.documentElement;
-    const toggle = $('darkToggle');
-    toggle.checked = root.classList.contains('dark');
-    toggle.addEventListener('change', () => {
-      root.classList.toggle('dark', toggle.checked);
-      try { localStorage.setItem('dark-mode', toggle.checked); } catch (e) {}
-    });
-
     // Emergency info
     const encrypted = "jjTTUFhoaDLbaiU/QZXhT1haWH1OjbV7WaiI2uobHdXs53GeDESW9thj9S3A7LWDhmdBag8eFdix";
-    const revealButton = $('revealButton');
-    const unlockSection = $('unlockSection');
+    const emergency = $('emergency');
     const passInput = $('emergencyPass');
+    const unlockButton = $('unlockButton');
     const errorMsg = $('emergencyError');
     const result = $('emergencyResult');
     const info = $('emergencyInfo');
 
-    revealButton.addEventListener('click', () => {
-      unlockSection.hidden = false;
-      revealButton.hidden = true;
-      revealButton.setAttribute('aria-expanded', 'true');
-      passInput.focus();
-    });
+    function clearEmergency() {
+      info.textContent = '';
+      result.hidden = true;
+      errorMsg.hidden = true;
+      passInput.value = '';
+    }
+
+    $('emergencyOpen').addEventListener('click', () => emergency.showModal());
+    emergency.addEventListener('close', clearEmergency);
 
     // Payload = base64(salt[16] | iv[12] | AES-GCM ciphertext); key = PBKDF2-SHA256(passcode)
     async function decrypt(passcode) {
@@ -161,24 +170,27 @@
 
     $('unlockForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (unlockButton.disabled) return;
+      unlockButton.disabled = true;
+      unlockButton.textContent = 'Unlocking…';
+      errorMsg.hidden = true;
       let text = '';
       try {
         text = await decrypt(passInput.value);
       } catch (err) {}
+      unlockButton.disabled = false;
+      unlockButton.textContent = 'Unlock';
       if (!text) {
         errorMsg.hidden = false;
         result.hidden = true;
         return;
       }
-      errorMsg.hidden = true;
       info.textContent = text;
       result.hidden = false;
     });
 
     $('hideButton').addEventListener('click', () => {
-      info.textContent = '';
-      result.hidden = true;
-      passInput.value = '';
+      clearEmergency();
       passInput.focus();
     });
   </script>

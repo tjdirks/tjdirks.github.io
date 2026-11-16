@@ -432,3 +432,8 @@ dialog[open]::backdrop { animation: fade 0.25s ease-out; }
 @media (prefers-reduced-motion: reduce) {
   dialog[open] .sheet, dialog[open]::backdrop { animation: none; }
 }
+
+/* Cross-fade between this page and the landing page */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+}
