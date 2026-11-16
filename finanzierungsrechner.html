@@ -63,6 +63,12 @@
 
     /* Figures: label, serif number, footnote between hairlines */
     .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(10rem, 100%), 1fr)); gap: 0 1.5rem; }
+    /* Five figures: three in the first row, two in the second */
+    @media (min-width: 40rem) {
+      .stats:has(> :nth-child(5):last-child) { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+      .stats:has(> :nth-child(5):last-child) > * { grid-column: span 2; }
+      .stats:has(> :nth-child(5):last-child) > :nth-child(n+4) { grid-column: span 3; }
+    }
     .tile { min-width: 0; padding: 0.8rem 0 1.1rem; border-top: 1px solid var(--rule); }
     .col > .stats .tile { border-top-color: var(--ink); }
     .tile .k, .tile .s { font-size: 0.8125rem; line-height: 1.4; color: var(--muted); }

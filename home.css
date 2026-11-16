@@ -142,7 +142,7 @@ dialog[open]:where(:not([data-closing])) {
 }
 
 dialog h2 {
-  margin: 0 2.5rem 1.25rem 0;
+  margin: 0 0 1.25rem;
   font-family: var(--serif);
   font-weight: 400;
   font-variation-settings: "opsz" 48;
@@ -155,14 +155,18 @@ dialog h3 { margin: 1.25rem 0 0.25rem; font-weight: 400; }
 dialog p { margin: 0; white-space: pre-line; }
 dialog .tools { display: inline-block; margin-top: 1.5rem; font-size: 0.8125rem; color: var(--muted); }
 
+/* Pinned to the top right, also when the dialog content scrolls */
 .close {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
+  position: sticky;
+  top: -0.75rem;
+  z-index: 1;
+  float: right;
+  margin: -0.75rem -0.75rem 0 0.5rem;
   width: 2.75rem;
   height: 2.75rem;
   border: 0;
-  background: none;
+  border-radius: 2px;
+  background: var(--panel);
   color: var(--muted);
   font: 1.5rem/1 var(--sans);
   cursor: pointer;
