@@ -16,7 +16,7 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='4' fill='%2317160f'/%3E%3Ctext x='32' y='44' font-family='Georgia,serif' font-size='32' text-anchor='middle' fill='%23f5f2ea'%3ETD%3C/text%3E%3C/svg%3E">
   <link rel="preload" href="fonts/newsreader-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="base.css?v=1">
-  <link rel="stylesheet" href="home.css?v=8">
+  <link rel="stylesheet" href="home.css?v=10">
 </head>
 <body>
   <div class="page">
@@ -38,7 +38,7 @@
 
       <footer>
         <a class="text-link" href="#imprint">Imprint</a>
-        <button type="button" class="text-link" id="emergencyOpen" aria-haspopup="dialog">Emergency information</button>
+        <a class="text-link" href="#emergency">Emergency contacts</a>
       </footer>
     </div>
   </div>
@@ -56,13 +56,16 @@
   <dialog id="emergency" closedby="any" aria-labelledby="emergencyTitle">
     <button type="button" class="close" data-close aria-label="Close">×</button>
     <h2 id="emergencyTitle">Emergency</h2>
+    <p class="first">In a life-threatening emergency, call <a class="text-link" href="tel:112">112</a> first.</p>
     <form class="unlock" id="unlockForm">
-      <input type="password" id="emergencyPass" placeholder="Passcode" aria-label="Passcode" autocomplete="off" autocapitalize="none" enterkeyhint="done">
+      <input type="password" id="emergencyPass" placeholder="Passcode" aria-label="Passcode" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="done">
       <button type="submit" class="btn" id="unlockButton">Unlock</button>
     </form>
     <p class="error" id="emergencyError" role="alert" hidden>Invalid passcode.</p>
     <div class="result" id="emergencyResult" hidden>
-      <pre id="emergencyInfo"></pre>
+      <ul class="contacts" id="emergencyList"></ul>
+      <a class="btn" id="smsAll" href="#">Text everyone <span class="arrow" aria-hidden="true">↗</span></a>
+      <p class="hint">Opens the message app on this phone with all numbers and a short text filled in.</p>
       <button type="button" class="text-link" id="hideButton">Hide</button>
     </div>
   </dialog>
@@ -125,42 +128,35 @@
     const imprint = $('imprint');
     const addr = "VGhvbWFzIERpcmtzCkxpbGxpLUZyaWVkZW1hbm4tUmluZyAyNAozMDE3NyBIYW5ub3ZlcgpHZXJtYW55";
     const mail = $('imprintMail');
-    function syncImprint() {
-      if (location.hash !== '#imprint') return closeDialog(imprint);
-      if (imprint.open) return;
-      if (!$('imprintAddr').textContent) {
-        $('imprintAddr').textContent = new TextDecoder().decode(Uint8Array.from(atob(addr), (ch) => ch.charCodeAt(0)));
-        mail.textContent = `${mail.dataset.user}@${mail.dataset.domain}`;
-        mail.href = `mailto:${mail.textContent}`;
-      }
-      imprint.showModal();
+    function fillImprint() {
+      if ($('imprintAddr').textContent) return;
+      $('imprintAddr').textContent = new TextDecoder().decode(Uint8Array.from(atob(addr), (ch) => ch.charCodeAt(0)));
+      mail.textContent = `${mail.dataset.user}@${mail.dataset.domain}`;
+      mail.href = `mailto:${mail.textContent}`;
     }
-    imprint.addEventListener('close', () => {
-      if (location.hash === '#imprint') history.replaceState(null, '', location.pathname + location.search);
-    });
-    window.addEventListener('hashchange', syncImprint);
-    syncImprint();
 
-    // Emergency info
-    const encrypted = "jjTTUFhoaDLbaiU/QZXhT1haWH1OjbV7WaiI2uobHdXs53GeDESW9thj9S3A7LWDhmdBag8eFdix";
+    // Emergency contacts
+    // Payload = base64(salt[16] | iv[12] | AES-GCM ciphertext); key = PBKDF2-SHA256(passcode)
+    // Plain text = JSON { v: 1, contacts: [{ n: name, t: number in +49... form }] }
+    const encrypted = "HlvmWLM4rkT3AxfEVzmm2mGTGKVVVNqRCj4rUy6QzvJGrMWJ5KaMkRZ7PqYqmFCh29ysLZwbusp/RQHn8T5PVXy0nU+dI1yIwrbFbjxlSMHHY6K4auNczy+B5asTyt+4F7ftK2JgBpQwSBIPN47BX9Yk3k/84566ewtnuy8ut4ZU5SkPQJ3xi7jdZAfMFyn1oYYLQ+8L/vmwnkjD9jRLjPRQH/mKS0lvSta033s/zLrjxzaWOVkyCL6Yn2X3C6k6c7x9cb8G8l3LKQnMJIMqul1LOFL0wGEDoaUe0rWdYZXsM8H3iETTqKgdHDnhdTlXnbb9A35iDvLIVorwHH5VTsK6MBHra6xxvMUvLIUK+IsnUAp9/emtmCIOVQJkXHwgv119KRzLdeZRzaM9X7RiJhoTiv1RjB8qiTKStgnRMm5i4/aDbHZtkC9TcFwRLfscpWfnKu8L19GAkYt7xf4Rs2LAzfOiBP0R08mwsOxZl/suY8b5+K7b369ftQMBcobQLAPHwlzyxpM+X8RcjjRcLAVfmt7Cv8ylVeE=";
     const emergency = $('emergency');
+    const unlockForm = $('unlockForm');
     const passInput = $('emergencyPass');
     const unlockButton = $('unlockButton');
     const errorMsg = $('emergencyError');
     const result = $('emergencyResult');
-    const info = $('emergencyInfo');
+    const list = $('emergencyList');
 
     function clearEmergency() {
-      info.textContent = '';
+      list.replaceChildren();
+      $('smsAll').href = '#';
       result.hidden = true;
       errorMsg.hidden = true;
+      unlockForm.hidden = false;
       passInput.value = '';
     }
-
-    $('emergencyOpen').addEventListener('click', () => emergency.showModal());
     emergency.addEventListener('close', clearEmergency);
 
-    // Payload = base64(salt[16] | iv[12] | AES-GCM ciphertext); key = PBKDF2-SHA256(passcode)
     async function decrypt(passcode) {
       const data = Uint8Array.from(atob(encrypted), (ch) => ch.charCodeAt(0));
       const material = await crypto.subtle.importKey('raw', new TextEncoder().encode(passcode), 'PBKDF2', false, ['deriveKey']);
@@ -168,27 +164,57 @@
         { name: 'PBKDF2', salt: data.slice(0, 16), iterations: 600000, hash: 'SHA-256' },
         material, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
       const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: data.slice(16, 28) }, key, data.slice(28));
-      return new TextDecoder().decode(plain);
+      return JSON.parse(new TextDecoder().decode(plain));
     }
 
-    $('unlockForm').addEventListener('submit', async (e) => {
+    // Text message links. iOS and Android use different forms for several recipients.
+    const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const smsBody = encodeURIComponent('Notfall: Ich bin ohne mein Telefon. Bitte ruft mich unter dieser Nummer zurück. – ');
+    const smsLink = (numbers) => ios
+      ? `sms://open?addresses=${numbers.join(',')}&body=${smsBody}`
+      : `sms:${numbers.join(',')}?body=${smsBody}`;
+    const pretty = (t) => `${t.slice(0, 3)} ${t.slice(3, 6)} ${t.slice(6)}`;
+
+    function link(href, text, label) {
+      const a = document.createElement('a');
+      a.className = 'text-link';
+      a.href = href;
+      a.textContent = text;
+      if (label) a.setAttribute('aria-label', label);
+      return a;
+    }
+
+    function showContacts(contacts) {
+      list.replaceChildren(...contacts.map(({ n, t }) => {
+        const li = document.createElement('li');
+        const name = document.createElement('b');
+        name.textContent = n;
+        const actions = document.createElement('span');
+        actions.append(link(`tel:${t}`, pretty(t), `Call ${n}, ${pretty(t)}`), link(smsLink([t]), 'Text', `Text ${n}`));
+        li.append(name, actions);
+        return li;
+      }));
+      $('smsAll').href = smsLink(contacts.map((c) => c.t));
+    }
+
+    unlockForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (unlockButton.disabled) return;
       unlockButton.disabled = true;
       unlockButton.textContent = 'Unlocking…';
       errorMsg.hidden = true;
-      let text = '';
+      let data = null;
       try {
-        text = await decrypt(passInput.value);
+        data = await decrypt(passInput.value.trim());
       } catch (err) {}
       unlockButton.disabled = false;
       unlockButton.textContent = 'Unlock';
-      if (!text) {
+      if (!data || !Array.isArray(data.contacts)) {
         errorMsg.hidden = false;
-        result.hidden = true;
         return;
       }
-      info.textContent = text;
+      showContacts(data.contacts);
+      unlockForm.hidden = true;
       result.hidden = false;
     });
 
@@ -196,6 +222,22 @@
       clearEmergency();
       passInput.focus();
     });
+
+    // Both dialogs open from the address: #imprint and #emergency
+    const hashDialogs = [imprint, emergency];
+    function syncHash() {
+      hashDialogs.forEach((dialog) => {
+        if (location.hash !== '#' + dialog.id) return closeDialog(dialog);
+        if (dialog.open) return;
+        if (dialog === imprint) fillImprint();
+        dialog.showModal();
+      });
+    }
+    hashDialogs.forEach((dialog) => dialog.addEventListener('close', () => {
+      if (location.hash === '#' + dialog.id) history.replaceState(null, '', location.pathname + location.search);
+    }));
+    window.addEventListener('hashchange', syncHash);
+    syncHash();
   </script>
 </body>
 </html>

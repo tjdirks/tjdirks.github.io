@@ -202,17 +202,39 @@ dialog .tools { display: inline-block; margin-top: 1.5rem; font-size: 0.8125rem;
   }
 }
 
-.result pre {
-  margin: 1.25rem 0 0.75rem;
-  padding: 1rem 0;
+.first { margin-bottom: 1.25rem; font-size: 0.875rem; color: var(--muted); }
+
+/* Contact rows: name, then call and text links */
+.contacts {
+  margin: 0 0 1.25rem;
+  padding: 0;
   border-top: 1px solid var(--ink);
+  list-style: none;
+}
+
+.contacts li {
+  display: grid;
+  gap: 0.1rem;
+  padding: 0.5rem 0 0.6rem;
   border-bottom: 1px solid var(--rule);
+}
+
+.contacts b {
   font-family: var(--serif);
-  font-size: 1.25rem;
-  line-height: 1.4;
-  white-space: pre-wrap;
+  font-weight: 400;
+  font-size: 1.125rem;
   overflow-wrap: anywhere;
 }
+
+.contacts span {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.result .hint { margin: 0.6rem 0 1rem; font-size: 0.8125rem; color: var(--muted); }
 
 @media (max-width: 46rem) {
   main { grid-template-columns: minmax(0, 1fr); }
