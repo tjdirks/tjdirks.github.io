@@ -16,19 +16,12 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='4' fill='%2317160f'/%3E%3Ctext x='32' y='44' font-family='Georgia,serif' font-size='32' text-anchor='middle' fill='%23f5f2ea'%3ETD%3C/text%3E%3C/svg%3E">
   <link rel="preload" href="fonts/newsreader-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="base.css?v=1">
-  <link rel="stylesheet" href="home.css?v=5">
+  <link rel="stylesheet" href="home.css?v=8">
 </head>
 <body>
   <div class="page">
     <main>
       <h1><span>Thomas</span> <span>Dirks</span></h1>
-
-      <dl class="facts">
-        <div><dt>Since 2021</dt><dd>Volkswagen AG <span>Group Mergers &amp; Acquisitions</span></dd></div>
-        <div><dt>2019–2021</dt><dd>UniCredit <span>Leveraged Finance</span></dd></div>
-        <div><dt>2011–2016</dt><dd>Volkswagen AG <span>Financial Controlling, dual study programme</span></dd></div>
-        <div><dt>Education</dt><dd>MSc Finance <span>Católica Lisbon School of Business and Economics</span></dd></div>
-      </dl>
 
       <nav class="links" aria-label="Links">
         <a class="btn" href="https://www.linkedin.com/in/tjdirks" target="_blank" rel="noopener noreferrer">LinkedIn <span class="arrow" aria-hidden="true">↗</span></a>
@@ -36,10 +29,19 @@
       </nav>
     </main>
 
-    <footer>
-      <a class="text-link" href="#imprint">Imprint</a>
-      <button type="button" class="text-link" id="emergencyOpen" aria-haspopup="dialog">Emergency information</button>
-    </footer>
+    <div class="bottom">
+      <ul class="tape" aria-label="Career">
+        <li><b>Volkswagen AG</b> <span>Group M&amp;A</span> <span>2021–</span></li>
+        <li><b>UniCredit</b> <span>Leveraged Finance</span> <span>2019–2021</span></li>
+        <li><b>Volkswagen AG</b> <span>Financial Controlling</span> <span>2011–2016</span></li>
+        <li><b>Católica Lisbon</b> <span>MSc Finance</span></li>
+      </ul>
+
+      <footer>
+        <a class="text-link" href="#imprint">Imprint</a>
+        <button type="button" class="text-link" id="emergencyOpen" aria-haspopup="dialog">Emergency information</button>
+      </footer>
+    </div>
   </div>
 
   <dialog id="imprint" closedby="any" aria-labelledby="imprintTitle">

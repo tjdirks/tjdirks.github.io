@@ -34,46 +34,28 @@ h1 {
 
 h1 span { display: block; }
 
-/* Facts: label and value rows between hairlines */
-.facts {
-  margin: 0;
-  border-top: 1px solid var(--ink);
-}
-
-.facts div {
-  display: grid;
-  grid-template-columns: 6.5rem minmax(0, 1fr);
-  gap: 1rem;
-  align-items: baseline;
-  padding: 0.8rem 0;
-  border-bottom: 1px solid var(--rule);
-}
-
-.facts dt { font-variant-numeric: tabular-nums; }
-
-.facts dt, .label {
+.label {
   font-size: 0.75rem;
   letter-spacing: 0.06em;
   color: var(--muted);
-  overflow-wrap: anywhere;
 }
 
-.facts dd {
+/* Career tape: one quiet monospaced line above the footer */
+.tape {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 2em;
   margin: 0;
-  overflow-wrap: anywhere;
-  hyphens: auto;
-  font-family: var(--serif);
-  font-size: 1.25rem;
-  line-height: 1.3;
-}
-
-/* Second line of a fact: role or school */
-.facts dd span {
-  display: block;
-  margin-top: 0.15rem;
-  font: 0.875rem/1.4 var(--sans);
+  padding: 0.9rem 0;
+  border-top: 1px solid var(--ink);
+  list-style: none;
+  font: 0.75rem/1.5 ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
   color: var(--muted);
 }
+
+.tape li { display: flex; flex-wrap: wrap; gap: 0 0.75em; }
+.tape b { font-weight: 500; color: var(--ink); }
 
 .links {
   grid-column: 1 / -1;
@@ -87,13 +69,12 @@ h1 span { display: block; }
 @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
 @keyframes appear { from { opacity: 0; } }
 
-h1, .facts, .links, footer { animation: appear 300ms ease both; }
+h1, .links, .bottom { animation: appear 300ms ease both; }
 
 @media (prefers-reduced-motion: no-preference) {
-  h1, .facts, .links, footer { animation: rise 400ms var(--ease-out) both; }
-  .facts { animation-delay: 50ms; }
-  .links { animation-delay: 90ms; }
-  footer { animation-delay: 120ms; }
+  h1, .links, .bottom { animation: rise 400ms var(--ease-out) both; }
+  .links { animation-delay: 50ms; }
+  .bottom { animation-delay: 100ms; }
 }
 
 /* Dialogs: enter 250ms, exit 150ms */
@@ -236,4 +217,5 @@ dialog .tools { display: inline-block; margin-top: 1.5rem; font-size: 0.8125rem;
 @media (max-width: 46rem) {
   main { grid-template-columns: minmax(0, 1fr); }
   .btn { flex: 1 1 auto; justify-content: space-between; }
+  .tape { flex-direction: column; }
 }
